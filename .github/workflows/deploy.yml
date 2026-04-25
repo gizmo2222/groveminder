@@ -1,0 +1,31 @@
+name: Deploy to hollypoppins.com
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload via SFTP
+        env:
+          SSHPASS: ${{ secrets.SFTP_PASSWORD }}
+        run: |
+          sudo apt-get install -y sshpass > /dev/null 2>&1
+          sshpass -e sftp -o StrictHostKeyChecking=no \
+            ${{ secrets.SFTP_USER }}@hollypoppins.com <<'SFTP'
+          put site-config.js /home/${{ secrets.SFTP_USER }}/hollypoppins.com/site-config.js
+          put index.html /home/${{ secrets.SFTP_USER }}/hollypoppins.com/index.html
+          put admin.html /home/${{ secrets.SFTP_USER }}/hollypoppins.com/admin.html
+          put ical-proxy.php /home/${{ secrets.SFTP_USER }}/hollypoppins.com/ical-proxy.php
+          put cal-push.php /home/${{ secrets.SFTP_USER }}/hollypoppins.com/cal-push.php
+          put mailer.php /home/${{ secrets.SFTP_USER }}/hollypoppins.com/mailer.php
+          put umbrella.png /home/${{ secrets.SFTP_USER }}/hollypoppins.com/umbrella.png
+          SFTP
+
+      - name: Confirm
+        run: echo "✅ Deployed to hollypoppins.com"

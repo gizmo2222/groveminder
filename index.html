@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holly Poppins</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy: #1B2A4A;
+            --navy-light: #2C3E6B;
+            --gold: #D4AF37;
+            --gold-light: #F0D060;
+            --cream: #FAF6ED;
+            --red: #C41E3A;
+            --white: #FFFFFF;
+            --text: #2D2D2D;
+            --text-light: #666;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ── Navigation ───────────────────────────────────── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--navy);
+            z-index: 100;
+            padding: 0 2rem;
+        }
+
+        .nav-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.4rem;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.875rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--gold); }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .nav-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            transition: all 0.3s;
+        }
+
+        /* ── Hero ─────────────────────────────────────────── */
+        #hero {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #111a2e 0%, var(--navy) 50%, var(--navy-light) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle at 20% 80%, rgba(212,175,55,0.06) 0%, transparent 50%),
+                              radial-gradient(circle at 80% 20%, rgba(212,175,55,0.04) 0%, transparent 50%);
+        }
+
+        .hero-content { position: relative; z-index: 1; }
+
+        .hero-umbrella {
+            width: clamp(80px, 12vw, 140px);
+            height: auto;
+            display: block;
+            margin: 0 auto 1.25rem;
+            filter: drop-shadow(0 4px 20px rgba(212,175,55,0.5));
+            animation: float 4s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            color: var(--white);
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .hero-title span { color: var(--gold); }
+
+        .hero-tagline {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: rgba(212,175,55,0.85);
+            font-size: 1.2rem;
+            margin-bottom: 1.75rem;
+            letter-spacing: 0.02em;
+        }
+
+        .hero-desc {
+            color: rgba(255,255,255,0.82);
+            max-width: 520px;
+            margin: 0 auto 2.5rem;
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* ── Buttons ──────────────────────────────────────── */
+        .btn-primary {
+            background: var(--gold);
+            color: var(--navy);
+            padding: 0.8rem 2.25rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: background 0.2s, transform 0.15s;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: var(--gold-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-outline {
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            padding: 0.8rem 2.25rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-outline:hover {
+            background: var(--gold);
+            color: var(--navy);
+        }
+
+        /* ── Sections ─────────────────────────────────────── */
+        section { padding: 5.5rem 2rem; }
+
+        .section-inner { max-width: 1100px; margin: 0 auto; }
+
+        .section-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+            color: var(--navy);
+            margin-bottom: 1rem;
+        }
+
+        .section-title.light { color: var(--white); }
+
+        .divider {
+            width: 56px;
+            height: 3px;
+            background: var(--gold);
+            margin-bottom: 2.75rem;
+            border-radius: 2px;
+        }
+
+        /* ── Services ─────────────────────────────────────── */
+        #services { background: var(--white); }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .service-card {
+            border: 1px solid #ece8df;
+            border-radius: 10px;
+            padding: 2rem 1.75rem;
+            text-align: center;
+            transition: box-shadow 0.25s, transform 0.25s;
+            background: var(--cream);
+        }
+
+        .service-card:hover {
+            box-shadow: 0 10px 32px rgba(27,42,74,0.1);
+            transform: translateY(-3px);
+        }
+
+        .service-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .service-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--navy);
+            margin-bottom: 0.6rem;
+        }
+
+        .service-desc {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            line-height: 1.65;
+        }
+
+        .service-rate {
+            margin-top: 0.9rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ece8df;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .service-rate-note {
+            display: block;
+            font-weight: 400;
+            color: var(--text-light);
+            margin-top: 0.2rem;
+            font-size: 0.8rem;
+        }
+
+        /* ── Book / Calendar ──────────────────────────────── */
+        #book { background: var(--cream); }
+
+        .book-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .calendar {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 4px 20px rgba(27,42,74,0.08);
+        }
+
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .cal-nav {
+            background: none;
+            border: 1px solid var(--gold);
+            color: var(--navy);
+            width: 34px;
+            height: 34px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cal-nav:hover { background: var(--gold); color: var(--navy); }
+
+        .cal-month {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .cal-day-name {
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-light);
+            font-weight: 700;
+            padding: 5px 0 8px;
+            letter-spacing: 0.05em;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .cal-day.available {
+            background: rgba(212,175,55,0.15);
+            color: var(--navy);
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid rgba(212,175,55,0.4);
+            transition: background 0.15s;
+        }
+
+        .cal-day.available:hover { background: var(--gold); color: var(--navy); }
+
+        .cal-day.today {
+            border: 2px solid var(--navy);
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .cal-day.selected {
+            background: var(--navy) !important;
+            color: var(--white) !important;
+            border-color: transparent !important;
+        }
+
+        .cal-day.past { opacity: 0.3; pointer-events: none; }
+
+        .cal-legend {
+            display: flex;
+            gap: 1.25rem;
+            margin-top: 1.1rem;
+            font-size: 0.78rem;
+            color: var(--text-light);
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        .cal-hint {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 0.75rem;
+            font-style: italic;
+        }
+
+        /* ── Booking Form ──────────────────────────────────── */
+        .booking-form {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(27,42,74,0.08);
+        }
+
+        .form-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group { margin-bottom: 1rem; }
+
+        .form-group label {
+            display: block;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.875rem;
+            font-weight: 400;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            color: var(--text);
+            background: var(--cream);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: var(--white);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .form-note {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 0.75rem;
+            line-height: 1.5;
+        }
+
+        /* ── Q&A form (borderless, lighter weight) ───────────── */
+        .qa-form {
+            padding-left: 1.75rem;
+            border-left: 3px solid var(--gold);
+        }
+
+        .qa-form .form-title { font-size: 1.2rem; }
+
+        /* ── Rates form (flat card, on cream) ────────────────── */
+        .rates-form {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.75rem;
+            border: 1px solid #ece8df;
+        }
+
+        .success-msg {
+            display: none;
+            background: #eafaf1;
+            border: 1px solid #27ae60;
+            border-radius: 4px;
+            padding: 1rem;
+            color: #1e8449;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .field-error {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 0.78rem;
+            color: var(--red);
+            margin-top: 0.3rem;
+        }
+
+        .form-group.is-invalid input,
+        .form-group.is-invalid select,
+        .form-group.is-invalid textarea {
+            border-color: var(--red);
+            background: #fff8f8;
+        }
+
+        .ref-form-wrap .form-group.is-invalid input,
+        .ref-form-wrap .form-group.is-invalid textarea {
+            border-color: #e05070;
+            background: rgba(196,30,58,0.12);
+        }
+
+        .ref-form-wrap .field-error { color: #ff8888; }
+
+        /* ── Testimonials ─────────────────────────────────── */
+        #testimonials { background: var(--navy); }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .testimonial-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 10px;
+            padding: 1.75rem;
+        }
+
+        .testimonial-stars {
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .testimonial-quote {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: rgba(255,255,255,0.88);
+            line-height: 1.75;
+            margin-bottom: 1.25rem;
+            font-size: 0.975rem;
+        }
+
+        .testimonial-author {
+            font-size: 0.875rem;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .testimonial-role {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.65);
+            margin-top: 2px;
+        }
+
+        .ref-form-wrap {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(212,175,55,0.25);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .ref-form-wrap .form-title { color: var(--white); }
+
+        .ref-form-wrap .form-group label { color: rgba(255,255,255,0.88); }
+
+        .ref-form-wrap .form-group input,
+        .ref-form-wrap .form-group textarea {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.15);
+            color: var(--white);
+        }
+
+        .ref-form-wrap .form-group input::placeholder,
+        .ref-form-wrap .form-group textarea::placeholder { color: rgba(255,255,255,0.3); }
+
+        .ref-form-wrap .form-group input:focus,
+        .ref-form-wrap .form-group textarea:focus {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--gold);
+        }
+
+        .ref-success {
+            background: rgba(39,174,96,0.15) !important;
+            border-color: rgba(39,174,96,0.4) !important;
+            color: #2ecc71 !important;
+        }
+
+        /* ── Star picker ──────────────────────────────────── */
+        .star-pick-wrap { display: flex; gap: 6px; margin-top: 0.25rem; }
+
+        .star-pick {
+            font-size: 1.9rem;
+            cursor: pointer;
+            color: rgba(255,255,255,0.2);
+            line-height: 1;
+            transition: color 0.1s;
+            user-select: none;
+        }
+
+        /* ── Q&A ──────────────────────────────────────────── */
+        #qa { background: var(--white); }
+
+        .qa-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        .faq-list { margin-bottom: 0; }
+
+        .faq-item { border-bottom: 1px solid #ece8df; }
+
+        .faq-question {
+            width: 100%;
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 1.2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--navy);
+            font-weight: 600;
+            gap: 1rem;
+        }
+
+        .faq-question .arrow {
+            color: var(--gold);
+            font-size: 1.1rem;
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+
+        .faq-item.open .arrow { transform: rotate(180deg); }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+
+        .faq-item.open .faq-answer { max-height: 300px; }
+
+        .faq-answer-inner {
+            padding-bottom: 1.2rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.75;
+        }
+
+        /* ── Rates ────────────────────────────────────────── */
+        #rates { background: var(--cream); }
+
+        .rates-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .rates-text .section-title { margin-bottom: 1rem; }
+
+        .rates-text p {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            line-height: 1.75;
+            font-size: 0.95rem;
+        }
+
+        /* ── Payment ──────────────────────────────────────── */
+        #pay { background: var(--navy); text-align: center; }
+
+        .pay-desc {
+            color: rgba(255,255,255,0.68);
+            max-width: 480px;
+            margin: 0 auto 2.75rem;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .pay-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pay-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2.25rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+            min-width: 190px;
+            justify-content: center;
+        }
+
+        .pay-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+        }
+
+        .pay-venmo,
+        .pay-cashapp,
+        .pay-zelle {
+            background: transparent;
+            border: 1.5px solid rgba(255,255,255,0.28);
+            color: rgba(255,255,255,0.88);
+        }
+        .pay-btn-icon { font-size: 1.3rem; }
+
+        .pay-note {
+            color: rgba(255,255,255,0.35);
+            font-size: 0.78rem;
+            margin-top: 2rem;
+        }
+
+        /* ── Footer ───────────────────────────────────────── */
+        footer {
+            background: #0d1526;
+            color: rgba(255,255,255,0.4);
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.85rem;
+        }
+
+        footer a { color: var(--gold); text-decoration: none; }
+        footer a:hover { color: var(--gold-light); }
+
+        /* ── Mobile ───────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: var(--navy);
+                padding: 1rem 2rem 1.5rem;
+                gap: 0.9rem;
+                border-top: 1px solid rgba(212,175,55,0.2);
+            }
+
+            .nav-links.open { display: flex; }
+            .nav-toggle { display: flex; }
+
+            .book-layout,
+            .qa-layout,
+            .rates-layout { grid-template-columns: 1fr; gap: 2rem; }
+
+            .form-row { grid-template-columns: 1fr; }
+
+            section { padding: 4rem 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────── -->
+<nav>
+    <div class="nav-inner">
+        <a href="#hero" class="nav-logo" id="navLogo">☂ Holly Poppins</a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#services">Services</a></li>
+            <li><a href="#book">Book Me</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#qa">Ask Holly</a></li>
+            <li><a href="#rates">Rates</a></li>
+            <li><a href="#pay">Pay</a></li>
+        </ul>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+</nav>
+
+<!-- ── Hero ────────────────────────────────────────────────── -->
+<section id="hero">
+    <div class="hero-content">
+        <img src="umbrella.png" class="hero-umbrella" id="heroUmbrella" alt="">
+        <h1 class="hero-title" id="heroTitle"><span>Holly</span> Poppins</h1>
+        <p class="hero-tagline" id="heroTagline">"Perfectly Imperfect and That's OK"</p>
+        <p class="hero-desc" id="heroDesc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
+        <div class="hero-ctas">
+            <a href="#book" class="btn-primary">Check Availability</a>
+            <a href="#testimonials" class="btn-outline">See Testimonials</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── Services ─────────────────────────────────────────────── -->
+<section id="services">
+    <div class="section-inner">
+        <h2 class="section-title">Services</h2>
+        <div class="divider"></div>
+        <div class="services-grid" id="servicesGrid"></div>
+    </div>
+</section>
+
+<!-- ── Book ──────────────────────────────────────────────────── -->
+<section id="book">
+    <div class="section-inner">
+        <h2 class="section-title">Check Availability &amp; Book</h2>
+        <div class="divider"></div>
+        <div class="book-layout">
+            <!-- Calendar -->
+            <div>
+                <div class="calendar">
+                    <div class="cal-header">
+                        <button class="cal-nav" id="calPrev">&#8249;</button>
+                        <span class="cal-month" id="calMonth"></span>
+                        <button class="cal-nav" id="calNext">&#8250;</button>
+                    </div>
+                    <div class="cal-grid" id="calGrid"></div>
+                    <div class="cal-legend">
+                        <span><span class="legend-dot" style="background:rgba(212,175,55,0.4);border:1px solid rgba(212,175,55,0.6)"></span>Available</span>
+                        <span><span class="legend-dot" style="background:var(--navy)"></span>Selected</span>
+                    </div>
+                    <p class="cal-hint">Tap a highlighted date to pre-fill the booking form.</p>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div>
+                <div class="booking-form">
+                    <h3 class="form-title">Request a Booking</h3>
+                    <form id="bookingForm" novalidate>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="b-name">Your Name *</label>
+                                <input type="text" id="b-name" name="name" required placeholder="Jane Smith">
+                            </div>
+                            <div class="form-group">
+                                <label for="b-email">Email *</label>
+                                <input type="email" id="b-email" name="email" required placeholder="jane@email.com">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="b-phone">Phone</label>
+                                <input type="tel" id="b-phone" name="phone" placeholder="(555) 000-0000">
+                            </div>
+                            <div class="form-group">
+                                <label for="b-service">Service *</label>
+                                <select id="b-service" name="service" required>
+                                    <option value="">Select...</option>
+                                    <option>Nanny / Childcare</option>
+                                    <option>Pet Sitting</option>
+                                    <option>Activities &amp; Enrichment</option>
+                                    <option>Household Support</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="b-date">Preferred Date *</label>
+                                <input type="date" id="b-date" name="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="b-time">Preferred Time</label>
+                                <input type="time" id="b-time" name="time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="b-notes">Notes</label>
+                            <textarea id="b-notes" name="notes" placeholder="Ages of children, special needs, expected duration, etc."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%">Send Booking Request</button>
+                        <p class="form-note">I'll review your request and get back to you within 24 hours. No commitment until you hear from me.</p>
+                        <div class="success-msg" id="bookSuccess">✓ Request sent! I'll be in touch within 24 hours to confirm your booking.</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Testimonials ───────────────────────────────────────────── -->
+<section id="testimonials">
+    <div class="section-inner">
+        <p class="section-label" style="color:rgba(212,175,55,0.8)">Kind Words</p>
+        <h2 class="section-title light">Testimonials</h2>
+        <div class="divider"></div>
+        <div class="testimonials-grid" id="testimonialsGrid"></div>
+
+        <div style="text-align:center;margin:3.5rem 0 2rem">
+            <p style="font-family:'Playfair Display',serif;font-style:italic;color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:0.75rem">Worked with me?</p>
+            <div class="divider" style="margin:0 auto"></div>
+        </div>
+        <div class="ref-form-wrap">
+            <h3 class="form-title">Leave a Testimonial</h3>
+            <form id="refForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="r-name">Your Name *</label>
+                        <input type="text" id="r-name" required placeholder="Your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="r-role">How You Know Me</label>
+                        <input type="text" id="r-role" placeholder="e.g. Nanny Client · 2 years">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="r-email">Email <span style="font-weight:400;opacity:0.6">(optional — for a thank-you note)</span></label>
+                    <input type="email" id="r-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>How did I do?</label>
+                    <div class="star-pick-wrap" id="refStars">
+                        <span class="star-pick" data-val="1">★</span>
+                        <span class="star-pick" data-val="2">★</span>
+                        <span class="star-pick" data-val="3">★</span>
+                        <span class="star-pick" data-val="4">★</span>
+                        <span class="star-pick" data-val="5">★</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="r-ref">Your Testimonial *</label>
+                    <textarea id="r-ref" required placeholder="Share your experience working with me..."></textarea>
+                </div>
+                <button type="submit" class="btn-primary">Submit Testimonial</button>
+                <div class="success-msg ref-success" id="refSuccess">✓ Thank you! Your testimonial has been submitted — I'll review it shortly.</div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- ── Q&A ────────────────────────────────────────────────────── -->
+<section id="qa">
+    <div class="section-inner">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="divider"></div>
+        <div class="qa-layout">
+            <div>
+                <div class="faq-list" id="faqList"></div>
+            </div>
+
+            <div>
+                <div class="qa-form">
+                    <h3 class="form-title">Ask a Question</h3>
+                    <form id="qaForm" novalidate>
+                        <div class="form-group">
+                            <label for="q-name">Your Name *</label>
+                            <input type="text" id="q-name" name="name" required placeholder="Your name">
+                        </div>
+                        <div class="form-group">
+                            <label for="q-email">Email *</label>
+                            <input type="email" id="q-email" name="email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="q-question">Your Question *</label>
+                            <textarea id="q-question" name="question" required style="min-height:110px" placeholder="What would you like to know?"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%">Ask Away</button>
+                        <div class="success-msg" id="qaSuccess">✓ Question received! I'll reply to your email within 24 hours.</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Rates ──────────────────────────────────────────────────── -->
+<section id="rates">
+    <div class="section-inner">
+        <div class="rates-layout">
+            <div class="rates-text">
+                <h2 class="section-title">Rates</h2>
+                <div class="divider"></div>
+                <p>Rates vary depending on the service, the number of children, hours, and any special requirements. I prefer to discuss pricing personally so I can give you an accurate, fair quote tailored to your situation.</p>
+                <p>Fill out the form and I'll get back to you promptly with a detailed breakdown — no pressure, no commitment.</p>
+            </div>
+            <div>
+                <div class="rates-form">
+                    <h3 class="form-title">Request Rate Info</h3>
+                    <form id="ratesForm" novalidate>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ra-name">Your Name *</label>
+                                <input type="text" id="ra-name" name="name" required placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label for="ra-email">Email *</label>
+                                <input type="email" id="ra-email" name="email" required placeholder="your@email.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ra-service">Service Type *</label>
+                            <select id="ra-service" name="service" required>
+                                <option value="">Select...</option>
+                                <option>Nanny / Childcare</option>
+                                <option>Pet Sitting</option>
+                                <option>Activities &amp; Enrichment</option>
+                                <option>Household Support</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ra-details">Details</label>
+                            <textarea id="ra-details" name="details" placeholder="Number of children, typical hours per week, any special considerations..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%">Request Rate Info</button>
+                        <div class="success-msg" id="ratesSuccess">✓ Got it! I'll send rate details to your email shortly.</div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Pay ────────────────────────────────────────────────────── -->
+<section id="pay">
+    <div class="section-inner">
+        <h2 class="section-title light">Pay Securely</h2>
+        <div class="divider" style="margin-left:auto;margin-right:auto"></div>
+        <p class="pay-desc">Please include your name and the date of service in the payment note — thank you!</p>
+        <div class="pay-buttons">
+            <a href="#" class="pay-btn pay-venmo" target="_blank" rel="noopener" id="venmoLink">
+                <span class="pay-btn-icon">💙</span> Pay via Venmo
+            </a>
+            <a href="#" class="pay-btn pay-cashapp" target="_blank" rel="noopener" id="cashappLink">
+                <span class="pay-btn-icon">💚</span> Pay via Cash App
+            </a>
+            <button class="pay-btn pay-zelle" id="zelleBtn" data-handle="">
+                <span class="pay-btn-icon">💜</span> Pay via Zelle
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+    <p><span id="footerSiteName">☂ Holly Poppins</span> &nbsp;·&nbsp; <a href="mailto:hello@example.com" id="footerEmail">hello@example.com</a></p>
+    <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.6">© 2026 Holly Poppins. All rights reserved.</p>
+</footer>
+
+<script src="site-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+// ── Firebase ───────────────────────────────────────────────────
+firebase.initializeApp(SITE_CONFIG.firebase);
+const db = firebase.firestore();
+
+// ── Defaults ───────────────────────────────────────────────────
+const DEFAULTS = {
+    email:         '',
+    venmoHandle:   '',
+    cashappHandle: '',
+    zelleHandle:   '',
+    availableDates: [],
+    services:     SITE_CONFIG.defaultServices,
+    testimonials: SITE_CONFIG.defaultTestimonials,
+    faq:          SITE_CONFIG.defaultFaq,
+};
+
+let AVAILABLE_DATES = [];
+let emailTemplates = {};
+let adminEmail     = '';
+
+async function loadConfig() {
+    let cfg = DEFAULTS;
+    try {
+        const doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) cfg = { ...DEFAULTS, ...doc.data() };
+    } catch { /* use defaults */ }
+    applyConfig(cfg);
+}
+
+function applyConfig(cfg) {
+    emailTemplates = cfg.emailTemplates || {};
+    adminEmail     = cfg.email          || '';
+    // Email
+    if (cfg.email) {
+        document.getElementById('footerEmail').href = `mailto:${cfg.email}`;
+        document.getElementById('footerEmail').textContent = cfg.email;
+    }
+
+    // Payment buttons
+    const venmoEl   = document.getElementById('venmoLink');
+    const cashappEl = document.getElementById('cashappLink');
+    const zelleEl   = document.getElementById('zelleBtn');
+    if (cfg.venmoHandle)   { venmoEl.href   = `https://venmo.com/${cfg.venmoHandle}`;    venmoEl.style.display   = ''; }
+    else                     venmoEl.style.display   = 'none';
+    if (cfg.cashappHandle) { cashappEl.href = `https://cash.app/$${cfg.cashappHandle}`; cashappEl.style.display = ''; }
+    else                     cashappEl.style.display = 'none';
+    if (cfg.zelleHandle)   { zelleEl.dataset.handle = cfg.zelleHandle; zelleEl.style.display = ''; }
+    else                     zelleEl.style.display = 'none';
+
+    // Services grid
+    const active = (cfg.services || DEFAULTS.services).filter(s => s.active !== false);
+    document.getElementById('servicesGrid').innerHTML = active.map(s => {
+        const r = s.rate;
+        const rateHtml = (r && r.public && r.base)
+            ? `<p class="service-rate">$${r.base}/hr${r.min ? ' · ' + r.min + ' hr min' : ''}${r.notes ? '<span class="service-rate-note">' + r.notes + '</span>' : ''}</p>`
+            : '';
+        return `
+        <div class="service-card">
+            <span class="service-icon">${s.icon}</span>
+            <h3 class="service-name">${s.name}</h3>
+            <p class="service-desc">${s.desc}</p>
+            ${rateHtml}
+        </div>`;
+    }).join('');
+
+    // Service dropdowns
+    const opts = ['<option value="">Select...</option>',
+        ...active.map(s => `<option>${s.name}</option>`),
+        '<option>Other</option>'
+    ].join('');
+    document.getElementById('b-service').innerHTML  = opts;
+    document.getElementById('ra-service').innerHTML = opts;
+
+    // Calendar
+    AVAILABLE_DATES = cfg.availableDates || [];
+    renderCalendar();
+
+    // Testimonials
+    const approved = (cfg.testimonials || DEFAULTS.testimonials);
+    document.getElementById('testimonialsGrid').innerHTML = approved.length
+        ? approved.map(t => `
+        <div class="testimonial-card">
+            <div class="testimonial-stars">${'★'.repeat(Math.max(1, Math.min(5, t.stars || 5)))}</div>
+            <p class="testimonial-quote">"${t.quote}"</p>
+            <p class="testimonial-author">${t.name}</p>
+            <p class="testimonial-role">${t.role || ''}</p>
+        </div>`).join('')
+        : '';
+
+    // FAQ
+    document.getElementById('faqList').innerHTML = (cfg.faq || DEFAULTS.faq).map(item => `
+        <div class="faq-item">
+            <button class="faq-question">${item.q} <span class="arrow">▾</span></button>
+            <div class="faq-answer"><div class="faq-answer-inner">${item.a}</div></div>
+        </div>`).join('');
+    initFaqAccordion();
+}
+
+// ── Email ──────────────────────────────────────────────────────────
+const DEFAULT_EMAIL_TEMPLATES = {
+    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
+    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
+    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
+    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
+    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
+    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
+    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
+    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
+    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
+};
+
+function fillTemplate(str, vars) {
+    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+function sendMail(type, to, vars) {
+    if (!to) return;
+    const tmpl = emailTemplates[type] || DEFAULT_EMAIL_TEMPLATES[type];
+    if (!tmpl) return;
+    fetch('/mailer.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({
+            to,
+            subject:  fillTemplate(tmpl.subject, vars),
+            body:     fillTemplate(tmpl.body,    vars),
+            replyTo:  vars._replyTo || '',
+        }),
+    }).catch(() => {});
+}
+
+// ── Validation ────────────────────────────────────────────────
+function validateForm(form) {
+    form.querySelectorAll('.field-error').forEach(e => e.remove());
+    form.querySelectorAll('.form-group.is-invalid').forEach(g => g.classList.remove('is-invalid'));
+    let valid = true;
+    form.querySelectorAll('[required]').forEach(field => {
+        const group = field.closest('.form-group');
+        if (!group) return;
+        let msg = '';
+        if (!field.value.trim()) {
+            msg = 'This field is required.';
+        } else if (field.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field.value.trim())) {
+            msg = 'Please enter a valid email address.';
+        }
+        if (msg) {
+            group.classList.add('is-invalid');
+            const err = document.createElement('p');
+            err.className = 'field-error';
+            err.textContent = msg;
+            group.appendChild(err);
+            valid = false;
+        }
+    });
+    if (!valid) form.querySelector('.form-group.is-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return valid;
+}
+
+// ── Calendar ───────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+let calDate = new Date();
+
+function renderCalendar() {
+    const year  = calDate.getFullYear();
+    const month = calDate.getMonth();
+    document.getElementById('calMonth').textContent = `${MONTHS[month]} ${year}`;
+
+    const grid = document.getElementById('calGrid');
+    grid.innerHTML = '';
+
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr    = new Date().toISOString().slice(0, 10);
+    const selected    = document.getElementById('b-date').value;
+
+    for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = d;
+
+        const isPast = dateStr < todayStr;
+        if (isPast)            el.classList.add('past');
+        if (dateStr === todayStr) el.classList.add('today');
+        if (dateStr === selected) el.classList.add('selected');
+
+        if (AVAILABLE_DATES.includes(dateStr) && !isPast) {
+            el.classList.add('available');
+            el.title = 'Available — click to book';
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.cal-day.selected').forEach(x => x.classList.remove('selected'));
+                el.classList.add('selected');
+                document.getElementById('b-date').value = dateStr;
+                document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => document.getElementById('b-name').focus(), 600);
+            });
+        }
+        grid.appendChild(el);
+    }
+}
+
+document.getElementById('calPrev').addEventListener('click', () => {
+    calDate.setMonth(calDate.getMonth() - 1); renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', () => {
+    calDate.setMonth(calDate.getMonth() + 1); renderCalendar();
+});
+
+// ── Mobile nav ─────────────────────────────────────────────────
+document.getElementById('navToggle').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+});
+document.querySelectorAll('#navLinks a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('navLinks').classList.remove('open'));
+});
+
+// ── Forms ──────────────────────────────────────────────────────
+const FORM_ENDPOINT = '';
+
+async function submitForm(form, successId, btnLabel) {
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+        if (FORM_ENDPOINT) {
+            await fetch(FORM_ENDPOINT, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
+        }
+        form.reset();
+        document.getElementById(successId).style.display = 'block';
+    } catch {
+        document.getElementById(successId).style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.textContent = btnLabel;
+}
+
+document.getElementById('bookingForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form    = e.target;
+    if (!validateForm(form)) return;
+    const btn     = form.querySelector('button[type=submit]');
+    const name    = document.getElementById('b-name').value.trim();
+    const email   = document.getElementById('b-email').value.trim();
+    const phone   = document.getElementById('b-phone').value.trim();
+    const service = document.getElementById('b-service').value;
+    const date    = document.getElementById('b-date').value;
+    const time    = document.getElementById('b-time').value;
+    const notes   = document.getElementById('b-notes').value.trim();
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    try {
+        await db.collection('bookings').add({ name, email, phone, service, date, time, notes, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        form.reset();
+    } catch { /* show success regardless */ }
+    document.getElementById('bookSuccess').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Send Booking Request';
+    const vars = { name, email, phone, service, date, time: time ? ' at ' + time : '', notes, siteName: SITE_CONFIG.siteName };
+    sendMail('booking_visitor', email, vars);
+    if (adminEmail) sendMail('booking_admin', adminEmail, { ...vars, _replyTo: email });
+});
+document.getElementById('qaForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form     = e.target;
+    if (!validateForm(form)) return;
+    const name     = document.getElementById('q-name').value.trim();
+    const email    = document.getElementById('q-email').value.trim();
+    const question = document.getElementById('q-question').value.trim();
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    form.reset();
+    document.getElementById('qaSuccess').style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Ask Away';
+    const vars = { name, email, question, siteName: SITE_CONFIG.siteName };
+    sendMail('question_visitor', email, vars);
+    if (adminEmail) sendMail('question_admin', adminEmail, { ...vars, _replyTo: email });
+});
+
+document.getElementById('ratesForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const form    = e.target;
+    if (!validateForm(form)) return;
+    const name    = document.getElementById('ra-name').value.trim();
+    const email   = document.getElementById('ra-email').value.trim();
+    const service = document.getElementById('ra-service').value;
+    const details = document.getElementById('ra-details').value.trim();
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    form.reset();
+    document.getElementById('ratesSuccess').style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Request Rate Info';
+    const vars = { name, email, service, details, siteName: SITE_CONFIG.siteName };
+    sendMail('rates_visitor', email, vars);
+    if (adminEmail) sendMail('rates_admin', adminEmail, { ...vars, _replyTo: email });
+});
+
+// ── Zelle button ───────────────────────────────────────────────
+document.getElementById('zelleBtn').addEventListener('click', function() {
+    const handle = this.dataset.handle;
+    navigator.clipboard.writeText(handle).then(() => {
+        const orig = this.innerHTML;
+        this.innerHTML = '✓ Copied!';
+        setTimeout(() => { this.innerHTML = orig; }, 2000);
+    });
+});
+
+// ── Star picker ────────────────────────────────────────────────
+let refStarValue = 5;
+(function() {
+    const stars = document.querySelectorAll('#refStars .star-pick');
+    function highlight(n) {
+        stars.forEach((s, i) => s.style.color = i < n ? 'var(--gold)' : 'rgba(255,255,255,0.2)');
+    }
+    highlight(refStarValue);
+    stars.forEach(s => {
+        s.addEventListener('mouseenter', () => highlight(+s.dataset.val));
+        s.addEventListener('mouseleave', () => highlight(refStarValue));
+        s.addEventListener('click', () => { refStarValue = +s.dataset.val; highlight(refStarValue); });
+    });
+})();
+
+// ── Reference form → Firestore ─────────────────────────────────
+document.getElementById('refForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form   = e.target;
+    if (!validateForm(form)) return;
+    const btn    = form.querySelector('button[type=submit]');
+    const rName  = document.getElementById('r-name').value.trim();
+    const rEmail = document.getElementById('r-email').value.trim();
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    try {
+        await db.collection('testimonials').add({
+            name:      rName,
+            role:      document.getElementById('r-role').value.trim(),
+            quote:     document.getElementById('r-ref').value.trim(),
+            stars:     refStarValue,
+            approved:  false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        form.reset();
+        refStarValue = 5;
+        document.querySelectorAll('#refStars .star-pick').forEach((s, i) =>
+            s.style.color = i < 5 ? 'var(--gold)' : 'rgba(255,255,255,0.2)');
+    } catch { /* show success anyway */ }
+    document.getElementById('refSuccess').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Submit Reference';
+    if (rEmail) sendMail('reference_visitor', rEmail, { name: rName, siteName: SITE_CONFIG.siteName });
+});
+
+// ── FAQ ────────────────────────────────────────────────────────
+function initFaqAccordion() {
+    document.querySelectorAll('#faqList .faq-question').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const item = btn.parentElement;
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('#faqList .faq-item.open').forEach(x => x.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        });
+    });
+}
+
+// ── Clear validation errors on input ──────────────────────────
+document.querySelectorAll('form').forEach(form => {
+    ['input', 'change'].forEach(evt => {
+        form.addEventListener(evt, e => {
+            const g = e.target.closest('.form-group');
+            if (g?.classList.contains('is-invalid')) {
+                g.classList.remove('is-invalid');
+                g.querySelectorAll('.field-error').forEach(el => el.remove());
+            }
+        });
+    });
+});
+
+// ── Meta (from site-config.js) ─────────────────────────────────
+function applyMeta() {
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = n;
+    document.getElementById('navLogo').innerHTML = `${e} ${n}`;
+    // heroUmbrella is now an <img> — leave it as-is
+    const [first, ...rest] = n.split(' ');
+    document.getElementById('heroTitle').innerHTML = rest.length
+        ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
+    document.getElementById('heroTagline').textContent = `"${SITE_CONFIG.tagline}"`;
+    document.getElementById('heroDesc').textContent    = SITE_CONFIG.heroDesc;
+    document.getElementById('footerSiteName').textContent = `${e} ${n}`;
+}
+
+// ── Init ───────────────────────────────────────────────────────
+applyMeta();
+loadConfig();
+</script>
+</body>
+</html>

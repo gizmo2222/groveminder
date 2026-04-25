@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holly Poppins — Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --navy: #1B2A4A;
+            --navy-light: #2C3E6B;
+            --gold: #D4AF37;
+            --gold-light: #F0D060;
+            --cream: #FAF6ED;
+            --white: #FFFFFF;
+            --text: #2D2D2D;
+            --text-light: #666;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: var(--cream);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Login ──────────────────────────────────────────── */
+        #screen-login {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(145deg, #111a2e, var(--navy));
+            padding: 2rem;
+        }
+
+        .login-box {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo .umbrella { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+
+        .login-logo h1 {
+            font-family: 'Playfair Display', serif;
+            color: var(--navy);
+            font-size: 1.5rem;
+        }
+
+        .login-logo p {
+            font-size: 0.78rem;
+            color: var(--text-light);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        /* ── Admin Layout ───────────────────────────────────── */
+        #screen-admin {
+            display: none;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        #screen-admin.visible { display: flex; }
+
+        .admin-header {
+            background: var(--navy);
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            flex-shrink: 0;
+        }
+
+        .admin-logo {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold);
+            font-size: 1.1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-user {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.78rem;
+            margin-right: 0.25rem;
+        }
+
+        .tab-nav {
+            background: var(--white);
+            border-bottom: 2px solid #ece8df;
+            padding: 0 2rem;
+            display: flex;
+            flex-shrink: 0;
+            position: sticky;
+            top: 60px;
+            z-index: 40;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 1rem 1.25rem;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--text-light);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
+        .tab-btn:hover:not(.active) { color: var(--navy); }
+
+        .admin-body {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            padding: 2.5rem 2rem;
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Form Elements ──────────────────────────────────── */
+        .field-group { margin-bottom: 1.25rem; }
+
+        .field-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .field-group input,
+        .field-group textarea {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.9rem;
+            background: var(--cream);
+            color: var(--text);
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .field-group input:focus,
+        .field-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+            background: var(--white);
+        }
+
+        .field-hint {
+            font-size: 0.76rem;
+            color: var(--text-light);
+            margin-top: 0.35rem;
+        }
+
+        .field-prefix {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--cream);
+            transition: border-color 0.2s;
+        }
+
+        .field-prefix:focus-within { border-color: var(--gold); background: var(--white); }
+
+        .field-prefix-label {
+            padding: 0.7rem 0.8rem;
+            background: #ece8df;
+            color: var(--text-light);
+            font-size: 0.875rem;
+            border-right: 1px solid #ddd;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .field-prefix input {
+            border: none !important;
+            background: transparent !important;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .section-heading {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--navy);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #ece8df;
+        }
+
+        .section-heading + .section-heading { margin-top: 2.5rem; }
+
+        /* ── Calendar ───────────────────────────────────────── */
+        .cal-wrap {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(27,42,74,0.07);
+            max-width: 420px;
+        }
+
+        .cal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .cal-nav {
+            background: none;
+            border: 1px solid var(--gold);
+            color: var(--navy);
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cal-nav:hover { background: var(--gold); }
+
+        .cal-month {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .cal-day-name {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            font-weight: 700;
+            padding: 4px 0 7px;
+            letter-spacing: 0.04em;
+        }
+
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.83rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: background 0.12s;
+            user-select: none;
+        }
+
+        .cal-day:hover { background: #f0ece3; }
+        .cal-day.empty { cursor: default; pointer-events: none; }
+        .cal-day.today { border: 2px solid var(--navy); color: var(--navy); font-weight: 700; }
+
+        .cal-day.available {
+            background: var(--gold);
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .cal-day.available:hover { background: var(--gold-light); }
+
+        .cal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #ece8df;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .cal-actions { display: flex; gap: 0.5rem; }
+
+        /* ── Services ───────────────────────────────────────── */
+        .service-row {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 0.6rem;
+            display: grid;
+            grid-template-columns: auto 50px 1fr;
+            gap: 1rem;
+            align-items: start;
+            transition: opacity 0.2s;
+        }
+
+        .service-row.inactive { opacity: 0.45; }
+
+        /* Toggle switch */
+        .toggle {
+            position: relative;
+            width: 38px;
+            height: 21px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .toggle input { display: none; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #ccc;
+            border-radius: 21px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.2s;
+        }
+
+        .toggle input:checked + .toggle-slider { background: var(--gold); }
+        .toggle input:checked + .toggle-slider::after { transform: translateX(17px); }
+
+        .svc-icon-input {
+            width: 44px;
+            height: 44px;
+            text-align: center;
+            font-size: 1.4rem;
+            padding: 0.2rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: var(--cream);
+            cursor: text;
+        }
+
+        .svc-fields { display: flex; flex-direction: column; gap: 0.5rem; }
+
+        .svc-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* ── Buttons ────────────────────────────────────────── */
+        .btn-primary {
+            background: var(--gold);
+            color: var(--navy);
+            padding: 0.65rem 1.5rem;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-ghost {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.75);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: 'Lato', sans-serif;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+        .btn-sm {
+            padding: 0.35rem 0.8rem;
+            font-size: 0.75rem;
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-light);
+            font-family: 'Lato', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-sm:hover { border-color: var(--gold); color: var(--navy); }
+
+        /* ── Error / Success inline ─────────────────────────── */
+        .inline-error {
+            background: #fdf0f0;
+            border: 1px solid #f5c6c6;
+            color: var(--danger);
+            padding: 0.7rem 1rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-top: 0.75rem;
+            display: none;
+        }
+
+        /* ── View site link ─────────────────────────────────── */
+        .view-site-link {
+            color: rgba(255,255,255,0.45);
+            font-size: 0.78rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .view-site-link:hover { color: var(--gold); }
+
+        /* ── Toast ──────────────────────────────────────────── */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 0.85rem 1.4rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        #toast.show { opacity: 1; transform: translateY(0); }
+        #toast.success { background: var(--success); color: white; }
+        #toast.error   { background: var(--danger);  color: white; }
+
+        /* ── Info box ───────────────────────────────────────── */
+        .info-box {
+            background: #f4f1ea;
+            border-left: 3px solid var(--gold);
+            border-radius: 0 6px 6px 0;
+            padding: 1rem 1.1rem;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            line-height: 1.65;
+        }
+
+        .info-box strong { color: var(--navy); }
+
+        /* ── Calendar Sync ──────────────────────────────────── */
+        .cal-instructions {
+            margin-bottom: 1rem;
+            border: 1px solid #ece8df;
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+
+        .cal-instructions summary {
+            padding: 0.7rem 1rem;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--navy);
+            user-select: none;
+            background: #f4f1ea;
+            list-style: none;
+        }
+
+        .cal-instructions summary::after { content: ' ▾'; color: var(--gold); }
+
+        .cal-instructions[open] summary::after { content: ' ▴'; }
+
+        .cal-instructions-body {
+            padding: 1rem;
+            color: var(--text-light);
+            line-height: 1.7;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .cal-instructions-body strong { color: var(--navy); }
+
+        .sync-result {
+            background: var(--cream);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .sync-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin: 0.75rem 0 1rem;
+        }
+
+        .chip {
+            background: rgba(212,175,55,0.18);
+            border: 1px solid rgba(212,175,55,0.45);
+            color: var(--navy);
+            padding: 0.22rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+        .chip.more {
+            background: #ece8df;
+            border-color: #ddd;
+            color: var(--text-light);
+        }
+
+        .sync-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        /* ── Testimonial admin cards ────────────────────────── */
+        .testimonial-admin-card {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .testimonial-admin-card.editable { border-left: 3px solid var(--gold); }
+
+        .tac-stars { color: var(--gold); font-size: 1rem; margin-bottom: 0.4rem; }
+
+        .tac-quote {
+            font-style: italic;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .tac-meta { font-size: 0.85rem; color: var(--navy); margin-bottom: 0.75rem; }
+
+        .tac-actions { display: flex; gap: 0.6rem; align-items: center; }
+
+        /* ── FAQ admin rows ──────────────────────────────────── */
+        .faq-admin-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1rem 1.1rem;
+            margin-bottom: 0.6rem;
+        }
+
+        /* ── Rate section (inside service rows) ─────────────── */
+        .rate-section {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px dashed #ece8df;
+        }
+
+        .rate-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 0.4rem;
+        }
+
+        .rate-row .field-prefix { flex: 1; min-width: 100px; }
+
+        .rate-public-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .rate-public-label input { cursor: pointer; }
+
+        /* ── Booking cards ──────────────────────────────────── */
+        .booking-card {
+            background: var(--white);
+            border: 1px solid #ece8df;
+            border-radius: 8px;
+            padding: 1.1rem 1.25rem;
+            margin-bottom: 0.6rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .booking-info { flex: 1; min-width: 0; }
+
+        .booking-when {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.25rem;
+        }
+
+        .booking-client {
+            font-size: 0.95rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .booking-details {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.3rem;
+        }
+
+        .booking-notes {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            font-style: italic;
+            margin-top: 0.25rem;
+        }
+
+        .booking-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            flex-shrink: 0;
+            align-items: flex-end;
+        }
+
+        .booking-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+
+        .booking-badge.confirmed { background: rgba(39,174,96,0.12); color: #27ae60; }
+        .booking-badge.declined  { background: rgba(231,76,60,0.1);  color: var(--danger); }
+
+        /* ── Responsive ─────────────────────────────────────── */
+        @media (max-width: 600px) {
+            .admin-header { padding: 0 1rem; }
+            .admin-user { display: none; }
+            .admin-content { padding: 1.5rem 1rem; }
+            .tab-nav { padding: 0 1rem; overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── Login Screen ───────────────────────────────────────────── -->
+<div id="screen-login">
+    <div class="login-box">
+        <div class="login-logo">
+            <span class="umbrella" id="loginUmbrella">☂</span>
+            <h1 id="loginTitle">Holly Poppins</h1>
+            <p>Admin Panel</p>
+        </div>
+        <form id="loginForm">
+            <div class="field-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" required placeholder="your@email.com" autocomplete="email">
+            </div>
+            <div class="field-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-primary" id="loginBtn" style="width:100%;margin-top:0.5rem">Sign In</button>
+            <div class="inline-error" id="loginError"></div>
+        </form>
+    </div>
+</div>
+
+<!-- ── Admin Panel ────────────────────────────────────────────── -->
+<div id="screen-admin">
+    <header class="admin-header">
+        <span class="admin-logo" id="adminLogo">☂ Holly Poppins Admin</span>
+        <div class="admin-header-right">
+            <span class="admin-user" id="adminUserEmail"></span>
+            <a href="https://hollypoppins.com" class="view-site-link" target="_blank">View Site ↗</a>
+            <button class="btn-primary" id="saveBtn">Save Changes</button>
+            <button class="btn-ghost" id="logoutBtn">Log Out</button>
+        </div>
+    </header>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="settings">Settings</button>
+        <button class="tab-btn" data-tab="calendar">Calendar</button>
+        <button class="tab-btn" data-tab="services">Services</button>
+        <button class="tab-btn" data-tab="testimonials">Testimonials</button>
+        <button class="tab-btn" data-tab="faq">FAQ</button>
+    </nav>
+
+    <div class="admin-body">
+        <div class="admin-content">
+
+            <!-- Settings Tab -->
+            <div id="tab-settings" class="tab-panel active">
+                <h2 class="section-heading">Contact</h2>
+                <div class="field-group">
+                    <label for="cfg-email">Email Address</label>
+                    <input type="email" id="cfg-email" placeholder="you@example.com">
+                    <p class="field-hint">Shown in the site footer. Visitors can reply to notification emails at this address.</p>
+                </div>
+
+                <h2 class="section-heading">Payment</h2>
+                <div class="field-group">
+                    <label>Venmo Username</label>
+                    <div class="field-prefix">
+                        <span class="field-prefix-label">venmo.com/</span>
+                        <input type="text" id="cfg-venmo" placeholder="your-username">
+                    </div>
+                    <p class="field-hint">Leave blank to hide the Venmo button.</p>
+                </div>
+                <div class="field-group">
+                    <label>Cash App Cashtag</label>
+                    <div class="field-prefix">
+                        <span class="field-prefix-label">cash.app/$</span>
+                        <input type="text" id="cfg-cashapp" placeholder="your-cashtag">
+                    </div>
+                    <p class="field-hint">Leave blank to hide the Cash App button.</p>
+                </div>
+                <div class="field-group">
+                    <label>Zelle Email or Phone</label>
+                    <input type="text" id="cfg-zelle" placeholder="you@email.com or (555) 000-0000">
+                    <p class="field-hint">Visitors tap the Zelle button to copy this to their clipboard. Leave blank to hide it.</p>
+                </div>
+
+                <h2 class="section-heading">Import Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Import your free days from Google Calendar, iCloud, or Outlook as available dates. Re-import whenever your availability changes.</p>
+                <div class="field-group">
+                    <label for="cfg-ical">iCal Feed URL</label>
+                    <input type="url" id="cfg-ical" placeholder="https://calendar.google.com/calendar/ical/...">
+                </div>
+                <details class="cal-instructions">
+                    <summary>How to get your iCal URL</summary>
+                    <div class="cal-instructions-body">
+                        <p><strong>Tip:</strong> Use a dedicated calendar (e.g. "Open for Bookings") so personal events stay private. Add an event on each day you're free — the name doesn't matter.</p>
+                        <p><strong>Google Calendar:</strong> Click ⋮ next to your calendar → Settings → Integrate calendar → copy <em>Secret address in iCal format</em>.</p>
+                        <p><strong>Apple iCloud:</strong> Right-click your calendar → Share Calendar → enable Public Calendar → copy the link, replace <code>webcal://</code> with <code>https://</code>.</p>
+                        <p><strong>Outlook:</strong> Calendar → Settings → Shared calendars → Publish to web → copy the <em>ICS</em> link.</p>
+                    </div>
+                </details>
+                <button type="button" class="btn-primary" id="syncBtn">Sync from Calendar</button>
+                <div id="syncResult" style="display:none"></div>
+
+                <h2 class="section-heading">Auto-add to Calendar</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">When you confirm a booking in the Calendar tab, it can be added to your calendar automatically. Credentials are stored privately.</p>
+                <div class="field-group">
+                    <label for="cal-method">Method</label>
+                    <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
+                        <option value="none">None</option>
+                        <option value="email">Email — send me a .ics attachment</option>
+                        <option value="google">Google Calendar</option>
+                        <option value="caldav">Apple iCloud / CalDAV</option>
+                    </select>
+                </div>
+
+                <div id="cal-email-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-email">Deliver .ics to</label>
+                        <input type="email" id="cal-email" placeholder="you@example.com">
+                        <p class="field-hint">Defaults to your contact email if blank.</p>
+                    </div>
+                </div>
+
+                <div id="cal-google-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-google-json">Service Account JSON</label>
+                        <textarea id="cal-google-json" rows="5" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
+                            style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:0.78rem;background:var(--cream);resize:vertical"></textarea>
+                        <p class="field-hint">Paste the JSON key downloaded from Google Cloud Console.</p>
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-google-id">Calendar ID</label>
+                        <input type="text" id="cal-google-id" placeholder="primary">
+                        <p class="field-hint">Use <em>primary</em>, or paste a Calendar ID from Google Calendar → Settings → Integrate calendar.</p>
+                    </div>
+                    <details class="cal-instructions">
+                        <summary>Setup instructions</summary>
+                        <div class="cal-instructions-body">
+                            <p><strong>1.</strong> Go to <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a> → create or select a project.</p>
+                            <p><strong>2.</strong> Enable the <strong>Google Calendar API</strong> under APIs &amp; Services → Library.</p>
+                            <p><strong>3.</strong> IAM &amp; Admin → Service Accounts → Create → add a JSON key and download it.</p>
+                            <p><strong>4.</strong> In Google Calendar → Settings → Share with specific people → add the service account's <code>client_email</code> with <em>Make changes to events</em>.</p>
+                            <p><strong>5.</strong> Paste the JSON and your Calendar ID above, then save.</p>
+                        </div>
+                    </details>
+                </div>
+
+                <div id="cal-caldav-fields" style="display:none">
+                    <div class="field-group">
+                        <label for="cal-caldav-url">CalDAV Server URL</label>
+                        <input type="url" id="cal-caldav-url" placeholder="https://caldav.icloud.com/">
+                        <p class="field-hint">iCloud default: <em>https://caldav.icloud.com/</em></p>
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-caldav-user">Apple ID</label>
+                        <input type="text" id="cal-caldav-user" placeholder="yourname@icloud.com" autocomplete="off">
+                    </div>
+                    <div class="field-group">
+                        <label for="cal-caldav-pass">App-Specific Password</label>
+                        <input type="password" id="cal-caldav-pass" placeholder="xxxx-xxxx-xxxx-xxxx" autocomplete="off">
+                        <p class="field-hint">Generate at <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a> → Sign-In &amp; Security → App-Specific Passwords.</p>
+                    </div>
+                    <button type="button" class="btn-sm" id="findCalendarsBtn" style="margin-bottom:0.75rem">Find my calendars</button>
+                    <div id="cal-discover-result" style="display:none;margin-bottom:1rem;font-size:0.875rem"></div>
+                    <div class="field-group">
+                        <label for="cal-caldav-cal">Calendar URL</label>
+                        <input type="url" id="cal-caldav-cal" placeholder="https://p12-caldav.icloud.com/dav/principals/...">
+                        <p class="field-hint">Use "Find my calendars" then click "Use this" next to the calendar you want.</p>
+                    </div>
+                </div>
+
+                <h2 class="section-heading">Email Templates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Customize messages sent automatically. Use <code>{name}</code>, <code>{service}</code>, <code>{date}</code>, <code>{time}</code>, <code>{email}</code>, <code>{siteName}</code> as placeholders.</p>
+                <div id="email-templates-list"></div>
+
+            </div>
+
+            <!-- Calendar Tab -->
+            <div id="tab-calendar" class="tab-panel">
+
+                <h2 class="section-heading">Available Dates</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Click any date to mark it available (gold) or unavailable. Highlighted dates show as bookable on the public site. To import from an existing calendar, use Settings → Availability Import.</p>
+                <div class="cal-wrap">
+                    <div class="cal-header">
+                        <button class="cal-nav" id="adminCalPrev">&#8249;</button>
+                        <span class="cal-month" id="adminCalMonth"></span>
+                        <button class="cal-nav" id="adminCalNext">&#8250;</button>
+                    </div>
+                    <div class="cal-grid" id="adminCalGrid"></div>
+                    <div class="cal-footer">
+                        <span id="calCount" style="font-weight:700;color:var(--navy)">0 dates available</span>
+                        <div class="cal-actions">
+                            <button class="btn-sm" id="addWeekdaysBtn">Add weekdays</button>
+                            <button class="btn-sm" id="clearMonthBtn">Clear month</button>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Booking Requests</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">Confirm to accept. Confirming pushes the booking to your calendar if you have that set up in Settings → Booking Push.</p>
+                <div id="bookings-pending"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Confirmed</h2>
+                <div id="bookings-confirmed"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Declined</h2>
+                <div id="bookings-declined"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+            </div>
+
+            <!-- Services Tab -->
+            <div id="tab-services" class="tab-panel">
+                <h2 class="section-heading">Services</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Toggle services on or off, and edit their icon, name, and description.
+                    Icons are emoji — paste any single emoji into the icon box.
+                    Pick one from <a href="https://emojipedia.org" target="_blank" style="color:var(--navy)">emojipedia.org</a>,
+                    or use <strong>Win + .</strong> (Windows) or <strong>Cmd + Ctrl + Space</strong> (Mac) to open your system picker.
+                </p>
+                <div id="services-list"></div>
+                <button type="button" class="btn-sm" id="addServiceBtn" style="margin-top:0.75rem">+ Add service</button>
+            </div>
+
+            <!-- Testimonials Tab -->
+            <div id="tab-testimonials" class="tab-panel">
+                <h2 class="section-heading">Pending Submissions</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Testimonials submitted by visitors. Approve to add to the public site, or dismiss to remove.
+                </p>
+                <div id="pending-list"><p style="color:var(--text-light);font-size:0.875rem">Loading…</p></div>
+
+                <h2 class="section-heading" style="margin-top:2.5rem">Approved Testimonials</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    These are shown on the public site. Edit or remove as needed, then hit Save Changes.
+                </p>
+                <div id="approved-list"></div>
+                <button type="button" class="btn-sm" id="addTestimonialBtn" style="margin-top:0.75rem">+ Add testimonial manually</button>
+            </div>
+
+            <!-- FAQ Tab -->
+            <div id="tab-faq" class="tab-panel">
+                <h2 class="section-heading">Frequently Asked Questions</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
+                    Edit questions and answers shown on the public site. To reorder, remove and re-add items.
+                </p>
+                <div id="faq-list"></div>
+                <button type="button" class="btn-sm" id="addFaqBtn" style="margin-top:0.75rem">+ Add question</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Site config -->
+<script src="site-config.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ── Firebase ─────────────────────────────────────────────────────
+firebase.initializeApp(SITE_CONFIG.firebase);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── Defaults ──────────────────────────────────────────────────────
+const DEFAULTS = {
+    email: '',
+    venmoHandle: '',
+    cashappHandle: '',
+    zelleHandle: '',
+    availableDates: [],
+    icalUrl: '',
+    testimonials: SITE_CONFIG.defaultTestimonials,
+    faq:          SITE_CONFIG.defaultFaq,
+    services:     SITE_CONFIG.defaultServices
+};
+
+let config = JSON.parse(JSON.stringify(DEFAULTS));
+
+// ── Auth ──────────────────────────────────────────────────────────
+function applyMeta() {
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = `${n} — Admin`;
+    document.getElementById('adminLogo').textContent  = `${e} ${n} Admin`;
+    document.getElementById('loginUmbrella').textContent = e;
+    document.getElementById('loginTitle').textContent    = n;
+}
+applyMeta();
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('screen-login').style.display = 'none';
+        document.getElementById('screen-admin').classList.add('visible');
+        document.getElementById('adminUserEmail').textContent = user.email;
+        loadConfig();
+        loadCalConfig();
+    } else {
+        document.getElementById('screen-login').style.display = 'flex';
+        document.getElementById('screen-admin').classList.remove('visible');
+    }
+});
+
+document.getElementById('loginForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('loginError');
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    err.style.display = 'none';
+    try {
+        await auth.signInWithEmailAndPassword(
+            document.getElementById('login-email').value,
+            document.getElementById('login-password').value
+        );
+    } catch {
+        err.textContent = 'Incorrect email or password.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+    }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+// ── Config ────────────────────────────────────────────────────────
+async function loadConfig() {
+    try {
+        const doc = await db.collection('config').doc('settings').get();
+        if (doc.exists) config = { ...DEFAULTS, ...doc.data() };
+    } catch {
+        showToast("Couldn't load your settings — showing defaults.", 'error');
+    }
+    populateUI();
+}
+
+async function saveConfig() {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    harvestUI();
+    try {
+        await db.collection('config').doc('settings').set(config);
+        await saveCalConfig();
+        showToast('✓ Saved — changes are live immediately.', 'success');
+    } catch {
+        showToast('Save failed. Check your connection.', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+}
+
+document.getElementById('saveBtn').addEventListener('click', saveConfig);
+
+function populateUI() {
+    document.getElementById('cfg-email').value        = config.email        || '';
+    document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
+    document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
+    document.getElementById('cfg-zelle').value        = config.zelleHandle  || '';
+    document.getElementById('cfg-ical').value         = config.icalUrl      || '';
+    renderAdminCalendar();
+    renderServicesList();
+    renderApprovedList();
+    renderFaqList();
+    renderTemplateEditor();
+}
+
+function harvestUI() {
+    config.email         = document.getElementById('cfg-email').value.trim();
+    config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
+    config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
+    config.zelleHandle   = document.getElementById('cfg-zelle').value.trim();
+    config.icalUrl       = document.getElementById('cfg-ical').value.trim();
+    config.services      = readServicesFromUI();
+    config.testimonials  = readApprovedFromUI();
+    config.faq           = readFaqFromUI();
+    // availableDates kept in sync on every click
+    config.emailTemplates = readTemplatesFromUI();
+}
+
+// ── Calendar ──────────────────────────────────────────────────────
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+let adminCalDate = new Date();
+
+document.getElementById('adminCalPrev').addEventListener('click', () => {
+    adminCalDate.setMonth(adminCalDate.getMonth() - 1);
+    renderAdminCalendar();
+});
+document.getElementById('adminCalNext').addEventListener('click', () => {
+    adminCalDate.setMonth(adminCalDate.getMonth() + 1);
+    renderAdminCalendar();
+});
+document.getElementById('clearMonthBtn').addEventListener('click', clearMonth);
+document.getElementById('addWeekdaysBtn').addEventListener('click', addWeekdays);
+
+function renderAdminCalendar() {
+    const year  = adminCalDate.getFullYear();
+    const month = adminCalDate.getMonth();
+    document.getElementById('adminCalMonth').textContent = `${MONTHS[month]} ${year}`;
+
+    const grid = document.getElementById('adminCalGrid');
+    grid.innerHTML = '';
+
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-name';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const todayStr    = new Date().toISOString().slice(0, 10);
+
+    for (let i = 0; i < firstDay; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = d;
+        if (dateStr === todayStr) el.classList.add('today');
+        if (config.availableDates.includes(dateStr)) el.classList.add('available');
+        el.addEventListener('click', () => toggleDate(dateStr, el));
+        grid.appendChild(el);
+    }
+
+    updateCalCount();
+}
+
+function toggleDate(dateStr, el) {
+    const idx = config.availableDates.indexOf(dateStr);
+    if (idx > -1) {
+        config.availableDates.splice(idx, 1);
+        el.classList.remove('available');
+    } else {
+        config.availableDates.push(dateStr);
+        config.availableDates.sort();
+        el.classList.add('available');
+    }
+    updateCalCount();
+}
+
+function updateCalCount() {
+    const n = config.availableDates.length;
+    document.getElementById('calCount').textContent = `${n} date${n !== 1 ? 's' : ''} available`;
+}
+
+function clearMonth() {
+    const y = adminCalDate.getFullYear();
+    const m = String(adminCalDate.getMonth() + 1).padStart(2, '0');
+    config.availableDates = config.availableDates.filter(d => !d.startsWith(`${y}-${m}`));
+    renderAdminCalendar();
+}
+
+function addWeekdays() {
+    const y = adminCalDate.getFullYear();
+    const m = adminCalDate.getMonth();
+    const days = new Date(y, m + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+        const date = new Date(y, m, d);
+        if (date.getDay() !== 0 && date.getDay() !== 6) {
+            const str = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            if (!config.availableDates.includes(str)) config.availableDates.push(str);
+        }
+    }
+    config.availableDates.sort();
+    renderAdminCalendar();
+}
+
+// ── Services ──────────────────────────────────────────────────────
+function renderServicesList() {
+    const list = document.getElementById('services-list');
+    list.innerHTML = '';
+    (config.services || []).forEach((svc, i) => {
+        const r = svc.rate || {};
+        const row = document.createElement('div');
+        row.className = `service-row${svc.active ? '' : ' inactive'}`;
+        row.dataset.index = i;
+        row.innerHTML = `
+            <label class="toggle" title="${svc.active ? 'Disable' : 'Enable'} service">
+                <input type="checkbox" ${svc.active ? 'checked' : ''}>
+                <span class="toggle-slider"></span>
+            </label>
+            <input class="svc-icon-input" type="text" value="${svc.icon || ''}" maxlength="2" title="Icon (emoji)">
+            <div class="svc-fields">
+                <input class="svc-name" type="text" value="${svc.name || ''}" placeholder="Service name"
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
+                <textarea class="svc-desc" placeholder="Description"
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
+                <button type="button" class="svc-delete" style="background:none;border:none;color:#aaa;font-size:0.75rem;cursor:pointer;padding:0.25rem 0;margin-top:0.3rem;text-align:left">✕ remove</button>
+                <div class="rate-section">
+                    <div class="rate-row">
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">$/hr</span>
+                            <input type="number" class="rate-base" min="0" step="0.50" value="${r.base || ''}" placeholder="—">
+                        </div>
+                        <div class="field-prefix">
+                            <span class="field-prefix-label">min hrs</span>
+                            <input type="number" class="rate-min" min="0" step="0.5" value="${r.min || ''}" placeholder="—">
+                        </div>
+                        <label class="rate-public-label">
+                            <input type="checkbox" class="rate-public" ${r.public ? 'checked' : ''}>
+                            Show rate publicly
+                        </label>
+                    </div>
+                    <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. +$10 for 2+ kids)"
+                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);width:100%;resize:vertical">${r.notes || ''}</textarea>
+                </div>
+            </div>
+        `;
+        row.querySelector('input[type=checkbox]').addEventListener('change', function() {
+            row.classList.toggle('inactive', !this.checked);
+        });
+        row.querySelector('.svc-delete').addEventListener('click', () => {
+            const name = row.querySelector('.svc-name').value.trim() || 'this service';
+            if (!confirm(`Remove "${name}"? This cannot be undone.`)) return;
+            config.services = readServicesFromUI();
+            config.services.splice(i, 1);
+            renderServicesList();
+        });
+        list.appendChild(row);
+    });
+}
+
+function readServicesFromUI() {
+    return Array.from(document.querySelectorAll('#services-list .service-row')).map((row, i) => ({
+        ...(config.services[i] || {}),
+        active: row.querySelector('input[type=checkbox]').checked,
+        icon:   row.querySelector('.svc-icon-input').value,
+        name:   row.querySelector('.svc-name').value,
+        desc:   row.querySelector('.svc-desc').value,
+        rate: {
+            base:   row.querySelector('.rate-base').value.trim(),
+            min:    row.querySelector('.rate-min').value.trim(),
+            notes:  row.querySelector('.rate-notes').value.trim(),
+            public: row.querySelector('.rate-public').checked,
+        },
+    }));
+}
+
+document.getElementById('addServiceBtn').addEventListener('click', () => {
+    config.services = readServicesFromUI();
+    config.services.push({ id: 'svc_' + Date.now(), icon: '✨', name: '', desc: '', active: true, rate: { base: '', min: '', notes: '', public: false } });
+    renderServicesList();
+    document.getElementById('services-list').lastElementChild?.querySelector('.svc-name')?.focus();
+});
+
+// ── Tabs ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+        if (btn.dataset.tab === 'calendar')     { renderAdminCalendar(); loadBookings(); }
+        if (btn.dataset.tab === 'testimonials')  loadPendingSubmissions();
+    });
+});
+
+// ── Calendar Sync ─────────────────────────────────────────────────
+document.getElementById('syncBtn').addEventListener('click', syncCalendar);
+
+async function syncCalendar() {
+    const url = document.getElementById('cfg-ical').value.trim();
+    if (!url) { showToast('Enter an iCal URL first.', 'error'); return; }
+
+    const btn = document.getElementById('syncBtn');
+    const result = document.getElementById('syncResult');
+    btn.disabled = true;
+    btn.textContent = 'Syncing…';
+    result.style.display = 'none';
+
+    try {
+        const proxy = `/ical-proxy.php?url=${encodeURIComponent(url)}`;
+        const resp = await fetch(proxy);
+        if (!resp.ok) throw new Error(await resp.text());
+        const dates = parseIcal(await resp.text());
+        const today = new Date().toISOString().slice(0, 10);
+        const future = dates.filter(d => d >= today);
+
+        if (future.length === 0) {
+            result.innerHTML = '<p style="color:var(--danger);padding:0.75rem 0">No upcoming events found in this calendar feed.</p>';
+        } else {
+            const preview = future.slice(0, 15).map(d => `<span class="chip">${fmtDate(d)}</span>`).join('');
+            const more = future.length > 15 ? `<span class="chip more">+${future.length - 15} more</span>` : '';
+            result.innerHTML = `
+                <div class="sync-result">
+                    <strong style="color:var(--navy)">Found ${future.length} upcoming date${future.length !== 1 ? 's' : ''}</strong>
+                    <div class="sync-chips">${preview}${more}</div>
+                    <div class="sync-actions">
+                        <button class="btn-primary" id="importReplace">Replace all dates</button>
+                        <button class="btn-sm" id="importMerge" style="padding:0.6rem 1rem">Merge with existing</button>
+                    </div>
+                </div>`;
+            document.getElementById('importReplace').addEventListener('click', () => importDates(future, false));
+            document.getElementById('importMerge').addEventListener('click',   () => importDates(future, true));
+        }
+        result.style.display = 'block';
+    } catch (e) {
+        result.innerHTML = `<p style="color:var(--danger);padding:0.75rem 0">Sync failed: ${e.message}</p>`;
+        result.style.display = 'block';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Sync from Calendar';
+}
+
+function parseIcal(text) {
+    text = text.replace(/\r\n[ \t]/g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    const dates = new Set();
+    text.split(/BEGIN:VEVENT/).slice(1).forEach(block => {
+        const s = block.match(/^DTSTART[^\n:]*:([\dTZ ]+)/m);
+        const e = block.match(/^DTEND[^\n:]*:([\dTZ ]+)/m);
+        if (!s) return;
+        const start = isoDate(s[1].trim());
+        if (!start) return;
+        if (e) {
+            const end = isoDate(e[1].trim());
+            if (end && end > start) {
+                let cur = new Date(start + 'T12:00:00');
+                const fin = new Date(end   + 'T12:00:00');
+                while (cur < fin) { dates.add(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+                return;
+            }
+        }
+        dates.add(start);
+    });
+    return Array.from(dates).sort();
+}
+
+function isoDate(val) {
+    const m = val.match(/^(\d{4})(\d{2})(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+function fmtDate(d) {
+    return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function importDates(dates, merge) {
+    config.availableDates = merge
+        ? [...new Set([...(config.availableDates || []), ...dates])].sort()
+        : dates;
+    document.getElementById('syncResult').style.display = 'none';
+    showToast(`✓ ${dates.length} dates imported — click Save Changes to apply.`, 'success');
+    document.querySelector('[data-tab="calendar"]').click();
+}
+
+// ── Testimonials (pending submissions) ────────────────────────────
+async function loadPendingSubmissions() {
+    const el = document.getElementById('pending-list');
+    el.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">Loading…</p>';
+    try {
+        const snap = await db.collection('testimonials')
+            .where('approved', '==', false)
+            .orderBy('createdAt', 'desc')
+            .get();
+        if (snap.empty) {
+            el.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+            return;
+        }
+        el.innerHTML = '';
+        snap.forEach(doc => {
+            const d = doc.data();
+            const stars = '★'.repeat(Math.max(1, Math.min(5, d.stars || 5)));
+            const card = document.createElement('div');
+            card.className = 'testimonial-admin-card';
+            card.innerHTML = `
+                <div class="tac-stars">${stars}</div>
+                <p class="tac-quote">"${d.quote}"</p>
+                <p class="tac-meta"><strong>${d.name}</strong>${d.role ? ' · ' + d.role : ''}</p>
+                <div class="tac-actions">
+                    <button class="btn-primary tac-approve">Approve</button>
+                    <button class="btn-sm tac-reject">Dismiss</button>
+                </div>`;
+            card.querySelector('.tac-approve').addEventListener('click', () => approvePending(doc.id, d, card));
+            card.querySelector('.tac-reject').addEventListener('click',  () => rejectPending(doc.id, card));
+            el.appendChild(card);
+        });
+    } catch (e) {
+        el.innerHTML = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${e.message}</p>`;
+    }
+}
+
+async function approvePending(id, data, card) {
+    try {
+        await db.collection('testimonials').doc(id).delete();
+        config.testimonials = config.testimonials || [];
+        config.testimonials.push({ name: data.name, role: data.role || '', quote: data.quote, stars: data.stars || 5 });
+        renderApprovedList();
+        card.remove();
+        showToast('✓ Approved — click Save Changes to publish.', 'success');
+        if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
+            document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+        }
+    } catch (e) { showToast("Couldn't approve this testimonial — try again.", 'error'); }
+}
+
+async function rejectPending(id, card) {
+    if (!confirm("Remove this testimonial? This can't be undone.")) return;
+    try {
+        await db.collection('testimonials').doc(id).delete();
+        card.remove();
+        if (!document.getElementById('pending-list').querySelector('.testimonial-admin-card')) {
+            document.getElementById('pending-list').innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">No pending submissions.</p>';
+        }
+        showToast('Testimonial removed.', 'success');
+    } catch (e) { showToast("Couldn't remove this testimonial — try again.", 'error'); }
+}
+
+// ── Testimonials (approved / editable) ────────────────────────────
+function renderApprovedList() {
+    const list = document.getElementById('approved-list');
+    list.innerHTML = '';
+    (config.testimonials || []).forEach((t, i) => {
+        const row = document.createElement('div');
+        row.className = 'testimonial-admin-card editable';
+        row.innerHTML = `
+            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center">
+                <span style="font-size:0.75rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em">Stars</span>
+                <select class="ta-stars" style="border:1px solid #ddd;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.85rem;background:var(--cream)">
+                    ${[5,4,3,2,1].map(n => `<option value="${n}"${(t.stars||5)===n?' selected':''}>${'★'.repeat(n)}</option>`).join('')}
+                </select>
+            </div>
+            <input class="ta-name" type="text" value="${t.name}" placeholder="Name"
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+            <input class="ta-role" type="text" value="${t.role || ''}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream)">
+            <textarea class="ta-quote" rows="3" placeholder="Their testimonial"
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${t.quote}</textarea>
+            <div class="tac-actions" style="margin-top:0.5rem">
+                <button class="btn-sm ta-delete" style="color:var(--danger);border-color:var(--danger)">Remove</button>
+            </div>`;
+        row.querySelector('.ta-delete').addEventListener('click', () => {
+            config.testimonials.splice(i, 1);
+            renderApprovedList();
+        });
+        list.appendChild(row);
+    });
+}
+
+function readApprovedFromUI() {
+    return Array.from(document.querySelectorAll('#approved-list .testimonial-admin-card')).map(row => ({
+        name:  row.querySelector('.ta-name').value.trim(),
+        role:  row.querySelector('.ta-role').value.trim(),
+        quote: row.querySelector('.ta-quote').value.trim(),
+        stars: +row.querySelector('.ta-stars').value,
+    }));
+}
+
+document.getElementById('addTestimonialBtn').addEventListener('click', () => {
+    config.testimonials = config.testimonials || [];
+    config.testimonials.push({ name: '', role: '', quote: '', stars: 5 });
+    renderApprovedList();
+    document.getElementById('approved-list').lastElementChild?.querySelector('.ta-name')?.focus();
+});
+
+// ── FAQ ───────────────────────────────────────────────────────────
+function renderFaqList() {
+    const list = document.getElementById('faq-list');
+    list.innerHTML = '';
+    (config.faq || DEFAULTS.faq).forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'faq-admin-row';
+        row.innerHTML = `
+            <div style="flex:1">
+                <input class="faq-q" type="text" value="${item.q}" placeholder="Question"
+                    style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+                <textarea class="faq-a" rows="3" placeholder="Answer"
+                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${item.a}</textarea>
+            </div>
+            <button class="btn-sm faq-del" style="color:var(--danger);border-color:var(--danger);align-self:flex-start;flex-shrink:0">✕</button>`;
+        row.querySelector('.faq-del').addEventListener('click', () => {
+            config.faq = readFaqFromUI();
+            config.faq.splice(i, 1);
+            renderFaqList();
+        });
+        list.appendChild(row);
+    });
+}
+
+function readFaqFromUI() {
+    return Array.from(document.querySelectorAll('#faq-list .faq-admin-row')).map(row => ({
+        q: row.querySelector('.faq-q').value.trim(),
+        a: row.querySelector('.faq-a').value.trim(),
+    }));
+}
+
+document.getElementById('addFaqBtn').addEventListener('click', () => {
+    config.faq = readFaqFromUI();
+    config.faq.push({ q: '', a: '' });
+    renderFaqList();
+    document.getElementById('faq-list').lastElementChild?.querySelector('.faq-q')?.focus();
+});
+
+// ── Calendar Integration Config (private/calendar) ───────────────
+const CAL_DEFAULTS = {
+    method: 'none', email: '', googleJson: '', googleCalId: 'primary',
+    caldavUrl: 'https://caldav.icloud.com/', caldavUser: '', caldavPass: '', caldavCal: ''
+};
+let calConfig = { ...CAL_DEFAULTS };
+
+async function loadCalConfig() {
+    try {
+        const doc = await db.collection('private').doc('calendar').get();
+        if (doc.exists) calConfig = { ...CAL_DEFAULTS, ...doc.data() };
+    } catch { /* private collection may not exist yet */ }
+    populateCalUI();
+}
+
+function populateCalUI() {
+    document.getElementById('cal-method').value      = calConfig.method      || 'none';
+    document.getElementById('cal-email').value       = calConfig.email       || '';
+    document.getElementById('cal-google-json').value = calConfig.googleJson  || '';
+    document.getElementById('cal-google-id').value   = calConfig.googleCalId || 'primary';
+    document.getElementById('cal-caldav-url').value  = calConfig.caldavUrl   || 'https://caldav.icloud.com/';
+    document.getElementById('cal-caldav-user').value = calConfig.caldavUser  || '';
+    document.getElementById('cal-caldav-pass').value = calConfig.caldavPass  || '';
+    document.getElementById('cal-caldav-cal').value  = calConfig.caldavCal   || '';
+    updateCalFields();
+}
+
+function harvestCalUI() {
+    calConfig.method      = document.getElementById('cal-method').value;
+    calConfig.email       = document.getElementById('cal-email').value.trim();
+    calConfig.googleJson  = document.getElementById('cal-google-json').value.trim();
+    calConfig.googleCalId = document.getElementById('cal-google-id').value.trim() || 'primary';
+    calConfig.caldavUrl   = document.getElementById('cal-caldav-url').value.trim();
+    calConfig.caldavUser  = document.getElementById('cal-caldav-user').value.trim();
+    calConfig.caldavPass  = document.getElementById('cal-caldav-pass').value.trim();
+    calConfig.caldavCal   = document.getElementById('cal-caldav-cal').value.trim();
+}
+
+async function saveCalConfig() {
+    harvestCalUI();
+    try {
+        await db.collection('private').doc('calendar').set(calConfig);
+    } catch { /* fails gracefully if Firestore rules not yet updated */ }
+}
+
+function updateCalFields() {
+    const method = document.getElementById('cal-method').value;
+    document.getElementById('cal-email-fields').style.display  = method === 'email'  ? '' : 'none';
+    document.getElementById('cal-google-fields').style.display = method === 'google' ? '' : 'none';
+    document.getElementById('cal-caldav-fields').style.display = method === 'caldav' ? '' : 'none';
+}
+
+document.getElementById('cal-method').addEventListener('change', updateCalFields);
+
+// ── CalDAV Discovery ──────────────────────────────────────────────
+document.getElementById('findCalendarsBtn').addEventListener('click', async () => {
+    const url  = document.getElementById('cal-caldav-url').value.trim()  || 'https://caldav.icloud.com/';
+    const user = document.getElementById('cal-caldav-user').value.trim();
+    const pass = document.getElementById('cal-caldav-pass').value.trim();
+    if (!user || !pass) { showToast('Enter a username and password first.', 'error'); return; }
+
+    const btn    = document.getElementById('findCalendarsBtn');
+    const result = document.getElementById('cal-discover-result');
+    btn.disabled = true;
+    btn.textContent = 'Searching…';
+    result.style.display = 'none';
+
+    try {
+        const resp = await fetch('/cal-push.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ method: 'caldav_discover', booking: {}, cal: { caldavUrl: url, caldavUser: user, caldavPass: pass } }),
+        });
+        const data = await resp.json();
+        if (!data.ok) throw new Error(data.error || 'Unknown error');
+        if (!data.calendars || !data.calendars.length) {
+            result.innerHTML = '<p style="color:var(--danger)">No calendars found for this account.</p>';
+        } else {
+            result.innerHTML = data.calendars.map(c =>
+                `<div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;flex-wrap:wrap">
+                    <button class="btn-sm use-cal-btn" data-url="${escHtml(c.url)}">Use this</button>
+                    <strong>${escHtml(c.name)}</strong>
+                    <span style="font-size:0.72rem;color:var(--text-light)">${escHtml(c.url)}</span>
+                </div>`).join('');
+            result.querySelectorAll('.use-cal-btn').forEach(b => {
+                b.addEventListener('click', () => {
+                    document.getElementById('cal-caldav-cal').value = b.dataset.url;
+                    showToast('✓ Calendar selected — save to apply.', 'success');
+                });
+            });
+        }
+    } catch (e) {
+        result.innerHTML = `<p style="color:var(--danger)">Discovery failed: ${escHtml(e.message)}</p>`;
+    }
+    result.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Find my calendars';
+});
+
+// ── Bookings ──────────────────────────────────────────────────────
+async function loadBookings() {
+    const pendEl  = document.getElementById('bookings-pending');
+    const confEl  = document.getElementById('bookings-confirmed');
+    const declEl  = document.getElementById('bookings-declined');
+    pendEl.innerHTML = confEl.innerHTML = declEl.innerHTML =
+        '<p style="color:var(--text-light);font-size:0.875rem">Loading…</p>';
+
+    try {
+        const snap = await db.collection('bookings')
+            .orderBy('createdAt', 'desc')
+            .limit(100)
+            .get();
+
+        const pending = [], confirmed = [], declined = [];
+        snap.forEach(doc => {
+            const d = { id: doc.id, ...doc.data() };
+            if      (d.status === 'confirmed') confirmed.push(d);
+            else if (d.status === 'declined')  declined.push(d);
+            else                               pending.push(d);
+        });
+
+        renderBookingList(pendEl,  pending,   'pending');
+        renderBookingList(confEl,  confirmed, 'confirmed');
+        renderBookingList(declEl,  declined,  'declined');
+    } catch (e) {
+        const msg = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${escHtml(e.message)}</p>`;
+        pendEl.innerHTML = confEl.innerHTML = declEl.innerHTML = msg;
+    }
+}
+
+function renderBookingList(container, bookings, listType) {
+    if (!bookings.length) {
+        container.innerHTML = '<p style="color:var(--text-light);font-size:0.875rem">None.</p>';
+        return;
+    }
+    container.innerHTML = '';
+    bookings.forEach(b => {
+        const when = b.date + (b.time ? ' at ' + b.time : '');
+        const card = document.createElement('div');
+        card.className = 'booking-card';
+        card.innerHTML = `
+            <div class="booking-info">
+                <div class="booking-when">${escHtml(when)}</div>
+                <div class="booking-client"><strong>${escHtml(b.name)}</strong> — ${escHtml(b.service)}</div>
+                <div class="booking-details">
+                    ${b.email ? `<span>✉ ${escHtml(b.email)}</span>` : ''}
+                    ${b.phone ? `<span>📞 ${escHtml(b.phone)}</span>` : ''}
+                </div>
+                ${b.notes ? `<div class="booking-notes">${escHtml(b.notes)}</div>` : ''}
+            </div>
+            <div class="booking-actions">
+                ${listType === 'pending'   ? `<button class="btn-primary bk-confirm" title="Confirm and push to calendar">Confirm</button>` : ''}
+                ${listType !== 'declined'  ? `<button class="btn-sm bk-decline" style="color:var(--danger);border-color:var(--danger)">Decline</button>` : ''}
+                ${listType === 'confirmed' ? `<span class="booking-badge confirmed">Confirmed</span>` : ''}
+                ${listType === 'declined'  ? `<span class="booking-badge declined">Declined</span>` : ''}
+            </div>`;
+        card.querySelector('.bk-confirm')?.addEventListener('click', () => confirmBooking(b));
+        card.querySelector('.bk-decline')?.addEventListener('click', () => declineBooking(b));
+        container.appendChild(card);
+    });
+}
+
+function escHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function confirmBooking(booking) {
+    try {
+        await db.collection('bookings').doc(booking.id).update({ status: 'confirmed' });
+        showToast('✓ Booking confirmed.', 'success');
+        loadBookings();
+        calPush(booking);
+        if (booking.email) sendMail('booking_confirmed', booking.email, buildVars(booking));
+    } catch (e) {
+        showToast("Couldn't confirm this booking — try again.", 'error');
+    }
+}
+
+async function declineBooking(booking) {
+    try {
+        await db.collection('bookings').doc(booking.id).update({ status: 'declined' });
+        showToast('Booking declined.', 'success');
+        loadBookings();
+        if (booking.email) sendMail('booking_declined', booking.email, buildVars(booking));
+    } catch (e) {
+        showToast("Couldn't decline this booking — try again.", 'error');
+    }
+}
+
+async function updateBookingStatus(id, status) {
+    try {
+        await db.collection('bookings').doc(id).update({ status });
+        showToast(status === 'declined' ? 'Booking declined.' : '✓ Status updated.', 'success');
+        loadBookings();
+    } catch (e) {
+        showToast("Couldn't update this booking — try again.", 'error');
+    }
+}
+
+async function calPush(booking) {
+    if (calConfig.method === 'none') return;
+
+    const payload = {
+        method:  calConfig.method,
+        booking: {
+            name:    booking.name    || '',
+            email:   booking.email   || '',
+            phone:   booking.phone   || '',
+            service: booking.service || '',
+            date:    booking.date    || '',
+            time:    booking.time    || '',
+            notes:   booking.notes   || '',
+        },
+        cal: {},
+    };
+
+    if (calConfig.method === 'email') {
+        payload.cal.email = calConfig.email || config.email;
+    } else if (calConfig.method === 'google') {
+        payload.cal.googleJson  = calConfig.googleJson;
+        payload.cal.googleCalId = calConfig.googleCalId || 'primary';
+    } else if (calConfig.method === 'caldav') {
+        payload.cal.caldavUrl  = calConfig.caldavCal || calConfig.caldavUrl;
+        payload.cal.caldavUser = calConfig.caldavUser;
+        payload.cal.caldavPass = calConfig.caldavPass;
+    }
+
+    try {
+        const resp = await fetch('/cal-push.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (data.ok && !data.skipped) {
+            showToast('✓ Added to calendar.', 'success');
+        } else if (!data.ok) {
+            showToast("Couldn't add to calendar — check Settings → Auto-add to Calendar.", 'error');
+        }
+    } catch (e) {
+        showToast("Couldn't add to calendar — check Settings → Auto-add to Calendar.", 'error');
+    }
+}
+
+// ── Email Templates ───────────────────────────────────────────────
+const EMAIL_TEMPLATE_TYPES = [
+    { key: 'booking_visitor',   label: 'Booking request received',  hint: 'Sent to visitor on submission. Available: {name} {email} {service} {date} {time} {phone} {notes} {siteName}' },
+    { key: 'booking_admin',     label: 'New booking notification',   hint: 'Sent to you on submission. Available: {name} {email} {service} {date} {time} {phone} {notes}' },
+    { key: 'booking_confirmed', label: 'Booking confirmed',          hint: 'Sent to visitor when you confirm. Available: {name} {email} {service} {date} {time} {siteName}' },
+    { key: 'booking_declined',  label: 'Booking declined',           hint: 'Sent to visitor when you decline. Available: {name} {email} {service} {date} {siteName}' },
+    { key: 'reference_visitor', label: 'Reference received',         hint: 'Sent to visitor after submitting a reference. Available: {name} {siteName}' },
+    { key: 'question_visitor',  label: 'Question received',          hint: 'Sent to visitor after asking a question. Available: {name} {siteName}' },
+    { key: 'question_admin',    label: 'New question',               hint: 'Sent to you when someone asks a question. Available: {name} {email} {question}' },
+    { key: 'rates_visitor',     label: 'Rate info request received', hint: 'Sent to visitor after requesting rate info. Available: {name} {service} {siteName}' },
+    { key: 'rates_admin',       label: 'Rate info request',          hint: 'Sent to you when someone requests rate info. Available: {name} {email} {service} {details}' },
+];
+
+const DEFAULT_EMAIL_TEMPLATES = {
+    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
+    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
+    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
+    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
+    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
+    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
+    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
+    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
+    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
+};
+
+function fillTemplate(str, vars) {
+    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
+
+async function sendMail(type, to, vars) {
+    if (!to) return;
+    const tmpl = config.emailTemplates?.[type] || DEFAULT_EMAIL_TEMPLATES[type];
+    if (!tmpl) return;
+    try {
+        const resp = await fetch('/mailer.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                to,
+                subject: fillTemplate(tmpl.subject, vars),
+                body:    fillTemplate(tmpl.body,    vars),
+                replyTo: vars._replyTo || '',
+            }),
+        });
+        const data = await resp.json();
+        if (!data.ok) showToast("Email delivery failed — check your contact email in Settings.", 'error');
+    } catch (e) {
+        showToast("Email delivery failed — check your contact email in Settings.", 'error');
+    }
+}
+
+function buildVars(booking) {
+    return {
+        name:     booking.name    || '',
+        email:    booking.email   || '',
+        phone:    booking.phone   || '',
+        service:  booking.service || '',
+        date:     booking.date    || '',
+        time:     booking.time ? ' at ' + booking.time : '',
+        notes:    booking.notes   || '',
+        siteName: SITE_CONFIG.siteName,
+    };
+}
+
+function renderTemplateEditor() {
+    const list = document.getElementById('email-templates-list');
+    if (!list) return;
+    list.innerHTML = '';
+    EMAIL_TEMPLATE_TYPES.forEach(t => {
+        const saved = config.emailTemplates?.[t.key] || {};
+        const def   = DEFAULT_EMAIL_TEMPLATES[t.key] || {};
+        const subj  = saved.subject ?? def.subject ?? '';
+        const body  = saved.body    ?? def.body    ?? '';
+        const el = document.createElement('details');
+        el.className = 'cal-instructions';
+        el.style.marginBottom = '0.4rem';
+        el.innerHTML = `
+            <summary>${t.label}</summary>
+            <div class="cal-instructions-body">
+                <p style="margin-bottom:0.75rem;font-size:0.8rem">${escHtml(t.hint)}</p>
+                <div class="field-group" style="margin-bottom:0.5rem">
+                    <label style="font-size:0.75rem;margin-bottom:0.3rem">Subject</label>
+                    <input id="tmpl-subj-${t.key}" type="text" value="${escHtml(subj)}"
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream)">
+                </div>
+                <div class="field-group">
+                    <label style="font-size:0.75rem;margin-bottom:0.3rem">Body</label>
+                    <textarea id="tmpl-body-${t.key}" rows="6"
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);resize:vertical;white-space:pre">${escHtml(body)}</textarea>
+                </div>
+            </div>`;
+        list.appendChild(el);
+    });
+}
+
+function readTemplatesFromUI() {
+    const tmpl = {};
+    EMAIL_TEMPLATE_TYPES.forEach(t => {
+        const subj = document.getElementById(`tmpl-subj-${t.key}`);
+        const body = document.getElementById(`tmpl-body-${t.key}`);
+        if (subj && body) tmpl[t.key] = { subject: subj.value.trim(), body: body.value.trim() };
+    });
+    return tmpl;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `show ${type}`;
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.className = ''; }, 3500);
+}
+</script>
+</body>
+</html>
