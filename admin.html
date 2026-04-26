@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holly Poppins — Admin</title>
+    <title>GroveMinder — Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com">
@@ -12,21 +12,24 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --navy: #1B2A4A;
-            --navy-light: #2C3E6B;
-            --gold: #D4AF37;
-            --gold-light: #F0D060;
-            --cream: #FAF6ED;
-            --white: #FFFFFF;
-            --text: #2D2D2D;
-            --text-light: #666;
-            --success: #27ae60;
-            --danger: #e74c3c;
+            /* Theme variables — set by site-config.js applyTheme() and the
+               admin's saved choice. Values here are the file-level fallback. */
+            --primary:       #2D4A2B;
+            --primary-light: #3F6240;
+            --primary-dark:  #1A2E1A;
+            --accent:        #C8924A;
+            --accent-light:  #E0B070;
+            --bg:            #F5EFE3;
+            --white:         #FFFFFF;
+            --text:          #2D2D2D;
+            --text-light:    #666;
+            --success:       #27ae60;
+            --danger:        #e74c3c;
         }
 
         body {
             font-family: 'Lato', sans-serif;
-            background: var(--cream);
+            background: var(--bg);
             color: var(--text);
             min-height: 100vh;
         }
@@ -37,7 +40,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(145deg, #111a2e, var(--navy));
+            background: linear-gradient(145deg, var(--primary-dark), var(--primary));
             padding: 2rem;
         }
 
@@ -55,11 +58,11 @@
             margin-bottom: 2rem;
         }
 
-        .login-logo .umbrella { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+        .login-logo .login-emoji { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; line-height: 1; }
 
         .login-logo h1 {
             font-family: 'Playfair Display', serif;
-            color: var(--navy);
+            color: var(--primary);
             font-size: 1.5rem;
         }
 
@@ -81,7 +84,7 @@
         #screen-admin.visible { display: flex; }
 
         .admin-header {
-            background: var(--navy);
+            background: var(--primary);
             padding: 0 2rem;
             display: flex;
             align-items: center;
@@ -95,7 +98,7 @@
 
         .admin-logo {
             font-family: 'Playfair Display', serif;
-            color: var(--gold);
+            color: var(--accent);
             font-size: 1.1rem;
             letter-spacing: 0.02em;
         }
@@ -139,8 +142,8 @@
             transition: color 0.2s, border-color 0.2s;
         }
 
-        .tab-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
-        .tab-btn:hover:not(.active) { color: var(--navy); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--accent); }
+        .tab-btn:hover:not(.active) { color: var(--primary); }
 
         .admin-body {
             flex: 1;
@@ -163,7 +166,7 @@
             display: block;
             font-size: 0.78rem;
             font-weight: 700;
-            color: var(--navy);
+            color: var(--primary);
             margin-bottom: 0.4rem;
             letter-spacing: 0.05em;
             text-transform: uppercase;
@@ -177,7 +180,7 @@
             border-radius: 4px;
             font-family: 'Lato', sans-serif;
             font-size: 0.9rem;
-            background: var(--cream);
+            background: var(--bg);
             color: var(--text);
             transition: border-color 0.2s, background 0.2s;
         }
@@ -185,7 +188,7 @@
         .field-group input:focus,
         .field-group textarea:focus {
             outline: none;
-            border-color: var(--gold);
+            border-color: var(--accent);
             background: var(--white);
         }
 
@@ -201,11 +204,11 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             overflow: hidden;
-            background: var(--cream);
+            background: var(--bg);
             transition: border-color 0.2s;
         }
 
-        .field-prefix:focus-within { border-color: var(--gold); background: var(--white); }
+        .field-prefix:focus-within { border-color: var(--accent); background: var(--white); }
 
         .field-prefix-label {
             padding: 0.7rem 0.8rem;
@@ -227,7 +230,7 @@
         .section-heading {
             font-family: 'Playfair Display', serif;
             font-size: 1.2rem;
-            color: var(--navy);
+            color: var(--primary);
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
             border-bottom: 1px solid #ece8df;
@@ -240,7 +243,7 @@
             background: var(--white);
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 2px 12px rgba(27,42,74,0.07);
+            box-shadow: 0 2px 12px color-mix(in srgb, var(--primary) 7%, transparent);
             max-width: 420px;
         }
 
@@ -253,8 +256,8 @@
 
         .cal-nav {
             background: none;
-            border: 1px solid var(--gold);
-            color: var(--navy);
+            border: 1px solid var(--accent);
+            color: var(--primary);
             width: 32px;
             height: 32px;
             border-radius: 4px;
@@ -266,12 +269,12 @@
             justify-content: center;
         }
 
-        .cal-nav:hover { background: var(--gold); }
+        .cal-nav:hover { background: var(--accent); }
 
         .cal-month {
             font-family: 'Playfair Display', serif;
             font-size: 1.1rem;
-            color: var(--navy);
+            color: var(--primary);
             font-weight: 600;
         }
 
@@ -305,15 +308,15 @@
 
         .cal-day:hover { background: #f0ece3; }
         .cal-day.empty { cursor: default; pointer-events: none; }
-        .cal-day.today { border: 2px solid var(--navy); color: var(--navy); font-weight: 700; }
+        .cal-day.today { border: 2px solid var(--primary); color: var(--primary); font-weight: 700; }
 
         .cal-day.available {
-            background: var(--gold);
-            color: var(--navy);
+            background: var(--accent);
+            color: var(--primary);
             font-weight: 700;
         }
 
-        .cal-day.available:hover { background: var(--gold-light); }
+        .cal-day.available:hover { background: var(--accent-light); }
 
         .cal-footer {
             display: flex;
@@ -376,7 +379,7 @@
             transition: transform 0.2s;
         }
 
-        .toggle input:checked + .toggle-slider { background: var(--gold); }
+        .toggle input:checked + .toggle-slider { background: var(--accent); }
         .toggle input:checked + .toggle-slider::after { transform: translateX(17px); }
 
         .svc-icon-input {
@@ -387,7 +390,7 @@
             padding: 0.2rem;
             border: 1px solid #ddd;
             border-radius: 6px;
-            background: var(--cream);
+            background: var(--bg);
             cursor: text;
         }
 
@@ -400,8 +403,8 @@
 
         /* ── Buttons ────────────────────────────────────────── */
         .btn-primary {
-            background: var(--gold);
-            color: var(--navy);
+            background: var(--accent);
+            color: var(--primary);
             padding: 0.65rem 1.5rem;
             border-radius: 4px;
             font-family: 'Lato', sans-serif;
@@ -415,7 +418,7 @@
             white-space: nowrap;
         }
 
-        .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+        .btn-primary:hover { background: var(--accent-light); transform: translateY(-1px); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         .btn-ghost {
@@ -445,7 +448,7 @@
             transition: all 0.2s;
         }
 
-        .btn-sm:hover { border-color: var(--gold); color: var(--navy); }
+        .btn-sm:hover { border-color: var(--accent); color: var(--primary); }
 
         /* ── Error / Success inline ─────────────────────────── */
         .inline-error {
@@ -467,7 +470,7 @@
             transition: color 0.2s;
         }
 
-        .view-site-link:hover { color: var(--gold); }
+        .view-site-link:hover { color: var(--accent); }
 
         /* ── Toast ──────────────────────────────────────────── */
         #toast {
@@ -493,7 +496,7 @@
         /* ── Info box ───────────────────────────────────────── */
         .info-box {
             background: #f4f1ea;
-            border-left: 3px solid var(--gold);
+            border-left: 3px solid var(--accent);
             border-radius: 0 6px 6px 0;
             padding: 1rem 1.1rem;
             font-size: 0.875rem;
@@ -501,7 +504,7 @@
             line-height: 1.65;
         }
 
-        .info-box strong { color: var(--navy); }
+        .info-box strong { color: var(--primary); }
 
         /* ── Calendar Sync ──────────────────────────────────── */
         .cal-instructions {
@@ -516,13 +519,13 @@
             padding: 0.7rem 1rem;
             cursor: pointer;
             font-weight: 700;
-            color: var(--navy);
+            color: var(--primary);
             user-select: none;
             background: #f4f1ea;
             list-style: none;
         }
 
-        .cal-instructions summary::after { content: ' ▾'; color: var(--gold); }
+        .cal-instructions summary::after { content: ' ▾'; color: var(--accent); }
 
         .cal-instructions[open] summary::after { content: ' ▴'; }
 
@@ -535,10 +538,10 @@
             gap: 0.6rem;
         }
 
-        .cal-instructions-body strong { color: var(--navy); }
+        .cal-instructions-body strong { color: var(--primary); }
 
         .sync-result {
-            background: var(--cream);
+            background: var(--bg);
             border: 1px solid #ece8df;
             border-radius: 8px;
             padding: 1.25rem;
@@ -553,9 +556,9 @@
         }
 
         .chip {
-            background: rgba(212,175,55,0.18);
-            border: 1px solid rgba(212,175,55,0.45);
-            color: var(--navy);
+            background: color-mix(in srgb, var(--accent) 18%, transparent);
+            border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+            color: var(--primary);
             padding: 0.22rem 0.65rem;
             border-radius: 20px;
             font-size: 0.76rem;
@@ -579,9 +582,9 @@
             margin-bottom: 0.75rem;
         }
 
-        .testimonial-admin-card.editable { border-left: 3px solid var(--gold); }
+        .testimonial-admin-card.editable { border-left: 3px solid var(--accent); }
 
-        .tac-stars { color: var(--gold); font-size: 1rem; margin-bottom: 0.4rem; }
+        .tac-stars { color: var(--accent); font-size: 1rem; margin-bottom: 0.4rem; }
 
         .tac-quote {
             font-style: italic;
@@ -591,7 +594,7 @@
             line-height: 1.6;
         }
 
-        .tac-meta { font-size: 0.85rem; color: var(--navy); margin-bottom: 0.75rem; }
+        .tac-meta { font-size: 0.85rem; color: var(--primary); margin-bottom: 0.75rem; }
 
         .tac-actions { display: flex; gap: 0.6rem; align-items: center; }
 
@@ -655,7 +658,7 @@
         .booking-when {
             font-size: 0.82rem;
             font-weight: 700;
-            color: var(--gold);
+            color: var(--accent);
             margin-bottom: 0.25rem;
         }
 
@@ -700,6 +703,55 @@
         .booking-badge.confirmed { background: rgba(39,174,96,0.12); color: #27ae60; }
         .booking-badge.declined  { background: rgba(231,76,60,0.1);  color: var(--danger); }
 
+        /* ── Theme Picker ───────────────────────────────────── */
+        .theme-picker {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .theme-card {
+            background: var(--white);
+            border: 2px solid #ece8df;
+            border-radius: 10px;
+            padding: 0.85rem;
+            cursor: pointer;
+            transition: border-color 0.2s, transform 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .theme-card:hover { transform: translateY(-2px); }
+        .theme-card.selected { border-color: var(--accent); }
+
+        .theme-swatches {
+            display: flex;
+            gap: 4px;
+            height: 36px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .theme-swatch {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .theme-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .theme-card.selected .theme-name::after {
+            content: ' ✓';
+            color: var(--accent);
+            font-weight: 700;
+        }
+
         /* ── Responsive ─────────────────────────────────────── */
         @media (max-width: 600px) {
             .admin-header { padding: 0 1rem; }
@@ -715,8 +767,8 @@
 <div id="screen-login">
     <div class="login-box">
         <div class="login-logo">
-            <span class="umbrella" id="loginUmbrella">☂</span>
-            <h1 id="loginTitle">Holly Poppins</h1>
+            <span class="login-emoji" id="loginEmoji" aria-hidden="true">🌳</span>
+            <h1 id="loginTitle">GroveMinder</h1>
             <p>Admin Panel</p>
         </div>
         <form id="loginForm">
@@ -737,10 +789,10 @@
 <!-- ── Admin Panel ────────────────────────────────────────────── -->
 <div id="screen-admin">
     <header class="admin-header">
-        <span class="admin-logo" id="adminLogo">☂ Holly Poppins Admin</span>
+        <span class="admin-logo" id="adminLogo">🌳 GroveMinder Admin</span>
         <div class="admin-header-right">
             <span class="admin-user" id="adminUserEmail"></span>
-            <a href="https://hollypoppins.com" class="view-site-link" target="_blank">View Site ↗</a>
+            <a href="/" class="view-site-link" target="_blank">View Site ↗</a>
             <button class="btn-primary" id="saveBtn">Save Changes</button>
             <button class="btn-ghost" id="logoutBtn">Log Out</button>
         </div>
@@ -759,6 +811,10 @@
 
             <!-- Settings Tab -->
             <div id="tab-settings" class="tab-panel active">
+                <h2 class="section-heading">Appearance</h2>
+                <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1rem">Pick a colour palette for your public site. The change applies immediately for visitors after you save.</p>
+                <div id="theme-picker" class="theme-picker"></div>
+
                 <h2 class="section-heading">Contact</h2>
                 <div class="field-group">
                     <label for="cfg-email">Email Address</label>
@@ -811,7 +867,7 @@
                 <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.25rem">When you confirm a booking in the Calendar tab, it can be added to your calendar automatically. Credentials are stored privately.</p>
                 <div class="field-group">
                     <label for="cal-method">Method</label>
-                    <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--cream);color:var(--text)">
+                    <select id="cal-method" style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.9rem;background:var(--bg);color:var(--text)">
                         <option value="none">None</option>
                         <option value="email">Email — send me a .ics attachment</option>
                         <option value="google">Google Calendar</option>
@@ -831,7 +887,7 @@
                     <div class="field-group">
                         <label for="cal-google-json">Service Account JSON</label>
                         <textarea id="cal-google-json" rows="5" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN RSA PRIVATE KEY-----\n...","client_email":"...@....iam.gserviceaccount.com",...}'
-                            style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:0.78rem;background:var(--cream);resize:vertical"></textarea>
+                            style="width:100%;padding:0.7rem 0.9rem;border:1px solid #ddd;border-radius:4px;font-family:monospace;font-size:0.78rem;background:var(--bg);resize:vertical"></textarea>
                         <p class="field-hint">Paste the JSON key downloaded from Google Cloud Console.</p>
                     </div>
                     <div class="field-group">
@@ -894,7 +950,7 @@
                     </div>
                     <div class="cal-grid" id="adminCalGrid"></div>
                     <div class="cal-footer">
-                        <span id="calCount" style="font-weight:700;color:var(--navy)">0 dates available</span>
+                        <span id="calCount" style="font-weight:700;color:var(--primary)">0 dates available</span>
                         <div class="cal-actions">
                             <button class="btn-sm" id="addWeekdaysBtn">Add weekdays</button>
                             <button class="btn-sm" id="clearMonthBtn">Clear month</button>
@@ -920,7 +976,7 @@
                 <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1.5rem">
                     Toggle services on or off, and edit their icon, name, and description.
                     Icons are emoji — paste any single emoji into the icon box.
-                    Pick one from <a href="https://emojipedia.org" target="_blank" style="color:var(--navy)">emojipedia.org</a>,
+                    Pick one from <a href="https://emojipedia.org" target="_blank" style="color:var(--primary)">emojipedia.org</a>,
                     or use <strong>Win + .</strong> (Windows) or <strong>Cmd + Ctrl + Space</strong> (Mac) to open your system picker.
                 </p>
                 <div id="services-list"></div>
@@ -980,6 +1036,7 @@ const DEFAULTS = {
     zelleHandle: '',
     availableDates: [],
     icalUrl: '',
+    theme:        SITE_CONFIG.theme || 'grove',
     testimonials: SITE_CONFIG.defaultTestimonials,
     faq:          SITE_CONFIG.defaultFaq,
     services:     SITE_CONFIG.defaultServices
@@ -992,8 +1049,8 @@ function applyMeta() {
     const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
     document.title = `${n} — Admin`;
     document.getElementById('adminLogo').textContent  = `${e} ${n} Admin`;
-    document.getElementById('loginUmbrella').textContent = e;
-    document.getElementById('loginTitle').textContent    = n;
+    document.getElementById('loginEmoji').textContent = e;
+    document.getElementById('loginTitle').textContent = n;
 }
 applyMeta();
 
@@ -1062,11 +1119,13 @@ async function saveConfig() {
 document.getElementById('saveBtn').addEventListener('click', saveConfig);
 
 function populateUI() {
+    if (config.theme && typeof applyTheme === 'function') applyTheme(config.theme);
     document.getElementById('cfg-email').value        = config.email        || '';
     document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
     document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
     document.getElementById('cfg-zelle').value        = config.zelleHandle  || '';
     document.getElementById('cfg-ical').value         = config.icalUrl      || '';
+    renderThemePicker();
     renderAdminCalendar();
     renderServicesList();
     renderApprovedList();
@@ -1083,8 +1142,38 @@ function harvestUI() {
     config.services      = readServicesFromUI();
     config.testimonials  = readApprovedFromUI();
     config.faq           = readFaqFromUI();
-    // availableDates kept in sync on every click
+    // availableDates and theme are kept in sync on every click
     config.emailTemplates = readTemplatesFromUI();
+}
+
+// ── Theme Picker ──────────────────────────────────────────────────
+function renderThemePicker() {
+    const wrap = document.getElementById('theme-picker');
+    if (!wrap || typeof THEMES === 'undefined') return;
+    wrap.innerHTML = '';
+    Object.entries(THEMES).forEach(([key, theme]) => {
+        const card = document.createElement('div');
+        card.className = 'theme-card' + (config.theme === key ? ' selected' : '');
+        card.dataset.theme = key;
+        card.innerHTML = `
+            <div class="theme-swatches">
+                <span class="theme-swatch" style="background:${theme.primaryDark}"></span>
+                <span class="theme-swatch" style="background:${theme.primary}"></span>
+                <span class="theme-swatch" style="background:${theme.accent}"></span>
+                <span class="theme-swatch" style="background:${theme.bg}"></span>
+            </div>
+            <span class="theme-name">${theme.label || key}</span>`;
+        card.addEventListener('click', () => selectTheme(key));
+        wrap.appendChild(card);
+    });
+}
+
+function selectTheme(key) {
+    config.theme = key;
+    if (typeof applyTheme === 'function') applyTheme(key);
+    document.querySelectorAll('#theme-picker .theme-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.theme === key);
+    });
 }
 
 // ── Calendar ──────────────────────────────────────────────────────
@@ -1199,9 +1288,9 @@ function renderServicesList() {
             <input class="svc-icon-input" type="text" value="${svc.icon || ''}" maxlength="2" title="Icon (emoji)">
             <div class="svc-fields">
                 <input class="svc-name" type="text" value="${svc.name || ''}" placeholder="Service name"
-                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--cream);width:100%">
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--bg);width:100%">
                 <textarea class="svc-desc" placeholder="Description"
-                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
                 <button type="button" class="svc-delete" style="background:none;border:none;color:#aaa;font-size:0.75rem;cursor:pointer;padding:0.25rem 0;margin-top:0.3rem;text-align:left">✕ remove</button>
                 <div class="rate-section">
                     <div class="rate-row">
@@ -1219,7 +1308,7 @@ function renderServicesList() {
                         </label>
                     </div>
                     <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. +$10 for 2+ kids)"
-                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);width:100%;resize:vertical">${r.notes || ''}</textarea>
+                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg);width:100%;resize:vertical">${r.notes || ''}</textarea>
                 </div>
             </div>
         `;
@@ -1300,7 +1389,7 @@ async function syncCalendar() {
             const more = future.length > 15 ? `<span class="chip more">+${future.length - 15} more</span>` : '';
             result.innerHTML = `
                 <div class="sync-result">
-                    <strong style="color:var(--navy)">Found ${future.length} upcoming date${future.length !== 1 ? 's' : ''}</strong>
+                    <strong style="color:var(--primary)">Found ${future.length} upcoming date${future.length !== 1 ? 's' : ''}</strong>
                     <div class="sync-chips">${preview}${more}</div>
                     <div class="sync-actions">
                         <button class="btn-primary" id="importReplace">Replace all dates</button>
@@ -1432,16 +1521,16 @@ function renderApprovedList() {
         row.innerHTML = `
             <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;align-items:center">
                 <span style="font-size:0.75rem;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:0.05em">Stars</span>
-                <select class="ta-stars" style="border:1px solid #ddd;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.85rem;background:var(--cream)">
+                <select class="ta-stars" style="border:1px solid #ddd;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.85rem;background:var(--bg)">
                     ${[5,4,3,2,1].map(n => `<option value="${n}"${(t.stars||5)===n?' selected':''}>${'★'.repeat(n)}</option>`).join('')}
                 </select>
             </div>
             <input class="ta-name" type="text" value="${t.name}" placeholder="Name"
-                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--bg)">
             <input class="ta-role" type="text" value="${t.role || ''}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
-                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream)">
+                style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg)">
             <textarea class="ta-quote" rows="3" placeholder="Their testimonial"
-                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${t.quote}</textarea>
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${t.quote}</textarea>
             <div class="tac-actions" style="margin-top:0.5rem">
                 <button class="btn-sm ta-delete" style="color:var(--danger);border-color:var(--danger)">Remove</button>
             </div>`;
@@ -1479,9 +1568,9 @@ function renderFaqList() {
         row.innerHTML = `
             <div style="flex:1">
                 <input class="faq-q" type="text" value="${item.q}" placeholder="Question"
-                    style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--cream)">
+                    style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--bg)">
                 <textarea class="faq-a" rows="3" placeholder="Answer"
-                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream);resize:vertical">${item.a}</textarea>
+                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${item.a}</textarea>
             </div>
             <button class="btn-sm faq-del" style="color:var(--danger);border-color:var(--danger);align-self:flex-start;flex-shrink:0">✕</button>`;
         row.querySelector('.faq-del').addEventListener('click', () => {
@@ -1834,12 +1923,12 @@ function renderTemplateEditor() {
                 <div class="field-group" style="margin-bottom:0.5rem">
                     <label style="font-size:0.75rem;margin-bottom:0.3rem">Subject</label>
                     <input id="tmpl-subj-${t.key}" type="text" value="${escHtml(subj)}"
-                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--cream)">
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg)">
                 </div>
                 <div class="field-group">
                     <label style="font-size:0.75rem;margin-bottom:0.3rem">Body</label>
                     <textarea id="tmpl-body-${t.key}" rows="6"
-                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--cream);resize:vertical;white-space:pre">${escHtml(body)}</textarea>
+                        style="width:100%;padding:0.55rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg);resize:vertical;white-space:pre">${escHtml(body)}</textarea>
                 </div>
             </div>`;
         list.appendChild(el);

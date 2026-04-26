@@ -1,4 +1,4 @@
-# Holly Poppins — Availability & Booking Site
+# GroveMinder — Availability & Booking Site
 
 A personal booking and availability site with a Firebase-backed admin panel. Built as a reusable template — only one file needs editing to launch a new instance.
 
@@ -57,23 +57,22 @@ const SITE_CONFIG = {
     firebase: { /* paste your Firebase config here */ },
 
     siteName: "Your Name",
-    navEmoji: "☂",
+    navEmoji: "🌳",
     tagline:  "Your tagline here",
     heroDesc: "A short description of what you offer.",
 
-    colors: {
-        navy:      "#1B2A4A",  // primary dark color
-        navyLight: "#2C3E6B",
-        gold:      "#D4AF37",  // accent color
-        goldLight: "#F0D060",
-        cream:     "#FAF6ED",  // background
-    },
+    // Pick one of the named themes (grove, coastal, lavender, slate, terracotta)
+    // — or override individual colors in the `colors` block below.
+    theme: "grove",
+    colors: {},
 
-    defaultServices: [ /* edit or replace */ ],
+    defaultServices:     [ /* edit or replace */ ],
     defaultTestimonials: [ /* edit or replace */ ],
-    defaultFaq: [ /* edit or replace */ ],
+    defaultFaq:          [ /* edit or replace */ ],
 };
 ```
+
+Themes can also be switched at runtime from the admin panel — that choice is saved in Firestore and overrides the file-level default.
 
 ### 4. Create a GitHub repo and set secrets
 
@@ -86,9 +85,7 @@ Add these secrets under **Settings → Secrets → Actions**:
 
 ### 5. Update deploy.yml
 
-In `.github/workflows/deploy.yml`, update:
-- The SFTP hostname (`hollypoppins.com` → your domain)
-- The deploy path (`/home/${{ secrets.SFTP_USER }}/hollypoppins.com/` → your web root)
+In `.github/workflows/deploy.yml`, set the `SFTP_HOST` and `REMOTE_DIR` env values to your domain and web root.
 
 ### 6. Push to deploy
 
@@ -96,7 +93,7 @@ In `.github/workflows/deploy.yml`, update:
 git push
 ```
 
-GitHub Actions will SFTP the four files to your server. The admin panel is at `/admin.html`.
+GitHub Actions will SFTP the project files to your server. The admin panel is at `/admin.html`.
 
 ## Files
 
@@ -107,10 +104,12 @@ GitHub Actions will SFTP the four files to your server. The admin panel is at `/
 | `admin.html` | Password-protected admin panel |
 | `ical-proxy.php` | Server-side proxy for iCal calendar feeds (CORS) |
 | `cal-push.php` | Server-side calendar push: email (.ics), Google Calendar, Apple iCloud/CalDAV |
+| `mailer.php` | Server-side mail relay for notification emails |
 | `.github/workflows/deploy.yml` | Auto-deploy on push to main |
 
 ## Admin features
 
+- **Appearance** — pick a colour theme (Grove, Coastal, Lavender, Slate, Terracotta)
 - **Settings** — email, Venmo, Cash App, Zelle, iCal sync URL
 - **Availability** — click-to-toggle calendar, import from Google/Apple/Outlook
 - **Services** — toggle on/off, edit icon, name, description

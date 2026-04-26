@@ -11,7 +11,7 @@ if (!preg_match('#^https://#i', $url)) { http_response_code(400); echo 'Only HTT
 
 $ctx = stream_context_create(['http' => [
     'timeout'    => 10,
-    'user_agent' => 'HollyPoppins/1.0 iCal-Proxy',
+    'user_agent' => 'GroveMinder/1.0 iCal-Proxy',
     'follow_location' => true,
 ]]);
 

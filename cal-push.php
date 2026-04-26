@@ -20,7 +20,7 @@ function b64url($data) {
 }
 
 function makeIcal($booking) {
-    $uid  = uniqid('hp-', true) . '@' . ($_SERVER['HTTP_HOST'] ?? 'hollypoppins.com');
+    $uid  = uniqid('gm-', true) . '@' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
     $now  = gmdate('Ymd\THis\Z');
     $date = preg_replace('/[^0-9]/', '', $booking['date'] ?? date('Y-m-d'));
     $time = trim($booking['time'] ?? '');
@@ -43,7 +43,7 @@ function makeIcal($booking) {
     if (!empty($booking['notes'])) $lines[] = "Notes: {$booking['notes']}";
     $desc = implode('\\n', $lines);
 
-    return "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//HollyPoppins//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:{$uid}\r\nDTSTAMP:{$now}\r\n{$dtstart}\r\n{$dtend}\r\nSUMMARY:{$svc} — {$name}\r\nDESCRIPTION:{$desc}\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+    return "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//GroveMinder//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:{$uid}\r\nDTSTAMP:{$now}\r\n{$dtstart}\r\n{$dtend}\r\nSUMMARY:{$svc} — {$name}\r\nDESCRIPTION:{$desc}\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
 }
 
 // ── Email ──────────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ function pushEmail($to, $booking, $ical) {
     $when    = $booking['date'] . ($booking['time'] ? ' at ' . $booking['time'] : '');
     $subject = "Booking confirmed: {$booking['service']} — {$booking['name']} on {$when}";
     $boundary = md5(uniqid());
-    $from    = 'noreply@' . ($_SERVER['HTTP_HOST'] ?? 'hollypoppins.com');
+    $from    = 'noreply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
 
     $plain  = "Booking confirmed.\n\nClient: {$booking['name']}\nService: {$booking['service']}\nDate: {$when}\n";
     if ($booking['email']) $plain .= "Email: {$booking['email']}\n";
@@ -154,7 +154,7 @@ function discoverCaldav($url, $user, $pass) {
 }
 
 function pushCaldav($url, $user, $pass, $ical) {
-    $uid = 'hp-' . bin2hex(random_bytes(8));
+    $uid = 'gm-' . bin2hex(random_bytes(8));
     $url = rtrim($url, '/') . "/{$uid}.ics";
     $resp = caldavRequest('PUT', $url, $user, $pass, $ical, ['Content-Type: text/calendar; charset=utf-8']);
     if ($resp['error']) return ['ok'=>false,'error'=>$resp['error']];
