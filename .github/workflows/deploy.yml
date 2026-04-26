@@ -1,13 +1,8 @@
-name: Deploy
+name: Deploy to metacrystal.com
 
 on:
   push:
-    branches: [main]
-
-# Set the SFTP host and remote path for your site below.
-env:
-  SFTP_HOST: your-domain.com
-  REMOTE_DIR: /home/${{ secrets.SFTP_USER }}/your-domain.com
+    branches: [master]
 
 jobs:
   deploy:
@@ -22,14 +17,15 @@ jobs:
         run: |
           sudo apt-get install -y sshpass > /dev/null 2>&1
           sshpass -e sftp -o StrictHostKeyChecking=no \
-            ${{ secrets.SFTP_USER }}@${{ env.SFTP_HOST }} <<SFTP
-          put site-config.js ${{ env.REMOTE_DIR }}/site-config.js
-          put index.html ${{ env.REMOTE_DIR }}/index.html
-          put admin.html ${{ env.REMOTE_DIR }}/admin.html
-          put ical-proxy.php ${{ env.REMOTE_DIR }}/ical-proxy.php
-          put cal-push.php ${{ env.REMOTE_DIR }}/cal-push.php
-          put mailer.php ${{ env.REMOTE_DIR }}/mailer.php
+            ${{ secrets.SFTP_USER }}@metacrystal.com <<'SFTP'
+          -mkdir /home/nstrupp/metacrystal.com/groveminder
+          put site-config.js /home/nstrupp/metacrystal.com/groveminder/site-config.js
+          put index.html /home/nstrupp/metacrystal.com/groveminder/index.html
+          put admin.html /home/nstrupp/metacrystal.com/groveminder/admin.html
+          put ical-proxy.php /home/nstrupp/metacrystal.com/groveminder/ical-proxy.php
+          put cal-push.php /home/nstrupp/metacrystal.com/groveminder/cal-push.php
+          put mailer.php /home/nstrupp/metacrystal.com/groveminder/mailer.php
           SFTP
 
       - name: Confirm
-        run: echo "Deployed to ${{ env.SFTP_HOST }}"
+        run: echo "✅ Deployed groveminder to metacrystal.com/groveminder/"

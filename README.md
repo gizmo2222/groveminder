@@ -85,7 +85,7 @@ Add these secrets under **Settings → Secrets → Actions**:
 
 ### 5. Update deploy.yml
 
-In `.github/workflows/deploy.yml`, set the `SFTP_HOST` and `REMOTE_DIR` env values to your domain and web root.
+In `.github/workflows/deploy.yml`, replace the SFTP host and remote paths with your own domain and web root. The current workflow deploys to `metacrystal.com/groveminder/`.
 
 ### 6. Push to deploy
 
