@@ -10,6 +10,23 @@ A personal booking and availability site with a Firebase-backed admin panel. Bui
 - PHP endpoints for email, calendar push and iCal sync
 - GitHub Actions SFTP deploy with an SSH key
 
+## Demo
+
+**Live demo: [metacrystal.com/groveminder](https://metacrystal.com/groveminder/)** — "Wren's Garden Care", a fictional business, with a working admin panel at [`admin.html`](https://metacrystal.com/groveminder/admin.html). No login is needed.
+
+The demo has no backend:
+
+- `site-config.demo.js` is the demo's settings (fictional business, sample services, FAQ and testimonials) with `demo: true`. The deploy uploads it **as `site-config.js`**.
+- `demo-firebase.js` is loaded on both pages but does nothing unless `demo: true`. In demo mode it stands in for Firebase: it seeds sample bookings, availability and a pending testimonial into the visitor's own browser (`localStorage`, keys starting `groveminder-demo:`), signs them straight into the admin panel, and shows a note instead of sending emails or calendar updates.
+- A bar at the top says it's a demo and offers **Reset demo**, which restores the sample data.
+- The PHP endpoints are not deployed with the demo (the deploy removes them from the server), so the public demo can't send email.
+
+Everything a visitor changes — bookings, settings, theme, testimonials — stays in their browser and affects nobody else.
+
+To run the demo locally: copy `site-config.demo.js` over `site-config.js` in a scratch copy and serve the folder (`python -m http.server`).
+
+**For a real site,** edit `site-config.js` as below and deploy all the files, including the PHP endpoints — see step 7 and the [Files](#files) table. `demo-firebase.js` can ship too; it stays inactive.
+
 ## Setting up a new site
 
 ### 1. Create a Firebase project
@@ -108,6 +125,8 @@ git push
 
 GitHub Actions uploads the site files to the server. The admin panel is at `admin.html` in the same folder.
 
+**Note:** this repo's own workflow publishes the **demo** to `metacrystal.com/groveminder/` (see [Demo](#demo)). For a real site, change the workflow's upload list to send `site-config.js` itself and the PHP endpoints (`hp-lib.php`, `mailer.php`, `cal-push.php`, `ical-proxy.php`) instead of `site-config.demo.js`.
+
 ## Files
 
 | File | Purpose |
@@ -119,6 +138,8 @@ GitHub Actions uploads the site files to the server. The admin panel is at `admi
 | `cal-push.php` | Adds confirmed bookings to a calendar: email (.ics), Google Calendar, Apple iCloud/CalDAV. Admin only |
 | `ical-proxy.php` | Fetches an iCal feed for "Sync from Calendar" (works around CORS). Admin only |
 | `hp-lib.php` | Shared PHP helpers: admin check, rate limits, Firestore reads |
+| `site-config.demo.js` | The demo's settings (`demo: true`); uploaded as `site-config.js` by this repo's deploy |
+| `demo-firebase.js` | Offline Firebase stand-in, active only in demo mode |
 | `email-templates.json` | Default email templates, shared by `mailer.php` and the admin editor |
 | `firestore.rules` | Firestore security rules (publish in the Firebase console; not deployed to the server) |
 | `.github/workflows/deploy.yml` | Auto-deploy on push to `master` |

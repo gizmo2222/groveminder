@@ -1,4 +1,4 @@
-name: Deploy to metacrystal.com/groveminder
+name: Deploy demo to metacrystal.com/groveminder
 
 on:
   push:
@@ -26,16 +26,21 @@ jobs:
           HOST=metacrystal.com
           DEST="/home/${SFTP_USER}/metacrystal.com/groveminder"
 
+          # This deploy publishes the DEMO: site-config.demo.js goes up as
+          # site-config.js, and demo-firebase.js keeps everything in the visitor's
+          # browser. The PHP endpoints aren't needed by the demo, so they are
+          # removed from the server rather than left reachable.
           cat > sftp-batch <<EOF
           -mkdir $DEST
-          put site-config.js       $DEST/site-config.js
+          put site-config.demo.js  $DEST/site-config.js
+          put demo-firebase.js     $DEST/demo-firebase.js
           put index.html           $DEST/index.html
           put admin.html           $DEST/admin.html
-          put hp-lib.php           $DEST/hp-lib.php
-          put mailer.php           $DEST/mailer.php
-          put cal-push.php         $DEST/cal-push.php
-          put ical-proxy.php       $DEST/ical-proxy.php
           put email-templates.json $DEST/email-templates.json
+          -rm $DEST/mailer.php
+          -rm $DEST/cal-push.php
+          -rm $DEST/ical-proxy.php
+          -rm $DEST/hp-lib.php
           EOF
 
           # The server's host keys are pinned in .github/known_hosts
@@ -69,4 +74,4 @@ jobs:
           rm -f ~/.ssh/deploy_key
 
       - name: Confirm
-        run: echo "✅ Deployed to metacrystal.com/groveminder/"
+        run: echo "✅ Deployed the demo to metacrystal.com/groveminder/"
