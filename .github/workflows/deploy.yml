@@ -1,31 +1,72 @@
-name: Deploy to metacrystal.com
+name: Deploy to metacrystal.com/groveminder
 
 on:
   push:
     branches: [master]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
+      # Signs in with the SSH_PRIVATE_KEY secret when it is set. If SFTP_PASSWORD
+      # is also set, the password is only tried when the key is refused, which
+      # lets you add the key without a broken deploy in between. Once the key
+      # works, delete the SFTP_PASSWORD secret. See README → "Deploy key".
       - name: Upload via SFTP
         env:
-          SSHPASS: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_USER:       ${{ secrets.SFTP_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSHPASS:         ${{ secrets.SFTP_PASSWORD }}
         run: |
-          sudo apt-get install -y sshpass > /dev/null 2>&1
-          sshpass -e sftp -o StrictHostKeyChecking=no \
-            ${{ secrets.SFTP_USER }}@metacrystal.com <<'SFTP'
-          -mkdir /home/nstrupp/metacrystal.com/groveminder
-          put site-config.js /home/nstrupp/metacrystal.com/groveminder/site-config.js
-          put index.html /home/nstrupp/metacrystal.com/groveminder/index.html
-          put admin.html /home/nstrupp/metacrystal.com/groveminder/admin.html
-          put ical-proxy.php /home/nstrupp/metacrystal.com/groveminder/ical-proxy.php
-          put cal-push.php /home/nstrupp/metacrystal.com/groveminder/cal-push.php
-          put mailer.php /home/nstrupp/metacrystal.com/groveminder/mailer.php
-          SFTP
+          set -euo pipefail
+          HOST=metacrystal.com
+          DEST="/home/${SFTP_USER}/metacrystal.com/groveminder"
+
+          cat > sftp-batch <<EOF
+          -mkdir $DEST
+          put site-config.js       $DEST/site-config.js
+          put index.html           $DEST/index.html
+          put admin.html           $DEST/admin.html
+          put hp-lib.php           $DEST/hp-lib.php
+          put mailer.php           $DEST/mailer.php
+          put cal-push.php         $DEST/cal-push.php
+          put ical-proxy.php       $DEST/ical-proxy.php
+          put email-templates.json $DEST/email-templates.json
+          EOF
+
+          # The server's host keys are pinned in .github/known_hosts
+          SSH_OPTS=(-o UserKnownHostsFile=.github/known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
+
+          if [ -n "$SSH_PRIVATE_KEY" ]; then
+            mkdir -p ~/.ssh
+            install -m 600 /dev/null ~/.ssh/deploy_key
+            printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+            SSH_OPTS+=(-i ~/.ssh/deploy_key -o IdentitiesOnly=yes)
+
+            # Try the key on its own (no password) so the log shows whether it works
+            echo pwd > key-check
+            if sftp "${SSH_OPTS[@]}" -o BatchMode=yes -o PasswordAuthentication=no -b key-check "$SFTP_USER@$HOST" > /dev/null 2>&1; then
+              echo "Deploy key: accepted by the server"
+            elif [ -n "$SSHPASS" ]; then
+              echo "::warning::Deploy key was refused; falling back to SFTP_PASSWORD"
+            else
+              echo "::error::Deploy key was refused and no SFTP_PASSWORD fallback is set"
+              exit 1
+            fi
+          fi
+
+          if [ -n "$SSHPASS" ]; then
+            sudo apt-get install -y sshpass > /dev/null 2>&1
+            sshpass -e sftp "${SSH_OPTS[@]}" "$SFTP_USER@$HOST" < sftp-batch
+          else
+            sftp "${SSH_OPTS[@]}" -b sftp-batch "$SFTP_USER@$HOST"
+          fi
+
+          rm -f ~/.ssh/deploy_key
 
       - name: Confirm
-        run: echo "✅ Deployed groveminder to metacrystal.com/groveminder/"
+        run: echo "✅ Deployed to metacrystal.com/groveminder/"

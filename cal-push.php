@@ -1,16 +1,20 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['ok'=>false,'error'=>'Method not allowed']); exit; }
+// ─────────────────────────────────────────────────────────────────────────────
+// cal-push.php — adds a confirmed booking to the admin's calendar (email .ics,
+// Google Calendar or CalDAV). Admin only.
+// ─────────────────────────────────────────────────────────────────────────────
 
-$input = json_decode(file_get_contents('php://input'), true);
-if (!$input) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'Invalid JSON']); exit; }
+require __DIR__ . '/hp-lib.php';
+
+hp_require_post();
+hp_require_admin();
+header('Content-Type: application/json');
+$input = hp_input();
 
 $method  = $input['method']  ?? 'none';
-$booking = $input['booking'] ?? [];
+$booking = is_array($input['booking'] ?? null) ? $input['booking'] : [];
+foreach (['name', 'email', 'phone', 'service', 'date', 'time'] as $k) $booking[$k] = hp_one_line($booking[$k] ?? '', 100);
+$booking['notes'] = hp_multi_line($booking['notes'] ?? '', 2000);
 $cal     = $input['cal']     ?? [];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -19,29 +23,34 @@ function b64url($data) {
     return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
 }
 
+// Escape text for an iCal property value (RFC 5545 §3.3.11)
+function icalText($s) {
+    return str_replace(['\\', ';', ',', "\n"], ['\\\\', '\;', '\,', '\n'], (string)$s);
+}
+
 function makeIcal($booking) {
-    $uid  = uniqid('gm-', true) . '@' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    $uid  = uniqid('hp-', true) . '@' . substr(hp_mail_from(), strlen('noreply@'));
     $now  = gmdate('Ymd\THis\Z');
-    $date = preg_replace('/[^0-9]/', '', $booking['date'] ?? date('Y-m-d'));
+    $date = preg_replace('/[^0-9]/', '', $booking['date'] ?: date('Y-m-d'));
     $time = trim($booking['time'] ?? '');
-    $name = htmlspecialchars_decode($booking['name']    ?? 'Client');
-    $svc  = htmlspecialchars_decode($booking['service'] ?? 'Booking');
+    $name = icalText($booking['name']    ?: 'Client');
+    $svc  = icalText($booking['service'] ?: 'Booking');
 
     if ($time && preg_match('/^(\d{1,2}):(\d{2})$/', $time, $m)) {
         $h = (int)$m[1]; $mi = (int)$m[2];
         $dtstart = "DTSTART:{$date}T" . sprintf('%02d%02d00', $h, $mi);
         $dtend   = "DTEND:{$date}T"   . sprintf('%02d%02d00', min($h + 2, 23), $mi);
     } else {
-        $nextDay = date('Ymd', strtotime(($booking['date'] ?? 'today') . ' +1 day'));
+        $nextDay = date('Ymd', strtotime(($booking['date'] ?: 'today') . ' +1 day'));
         $dtstart = "DTSTART;VALUE=DATE:{$date}";
         $dtend   = "DTEND;VALUE=DATE:{$nextDay}";
     }
 
-    $lines = ["Client: $name"];
+    $lines = ["Client: {$booking['name']}"];
     if (!empty($booking['email'])) $lines[] = "Email: {$booking['email']}";
     if (!empty($booking['phone'])) $lines[] = "Phone: {$booking['phone']}";
     if (!empty($booking['notes'])) $lines[] = "Notes: {$booking['notes']}";
-    $desc = implode('\\n', $lines);
+    $desc = icalText(implode("\n", $lines));
 
     return "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//GroveMinder//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nBEGIN:VEVENT\r\nUID:{$uid}\r\nDTSTAMP:{$now}\r\n{$dtstart}\r\n{$dtend}\r\nSUMMARY:{$svc} — {$name}\r\nDESCRIPTION:{$desc}\r\nSTATUS:CONFIRMED\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
 }
@@ -49,11 +58,12 @@ function makeIcal($booking) {
 // ── Email ──────────────────────────────────────────────────────────────────────
 
 function pushEmail($to, $booking, $ical) {
+    $to = filter_var($to, FILTER_VALIDATE_EMAIL) ?: '';
     if (!$to) return ['ok'=>false,'error'=>'No email address configured'];
     $when    = $booking['date'] . ($booking['time'] ? ' at ' . $booking['time'] : '');
-    $subject = "Booking confirmed: {$booking['service']} — {$booking['name']} on {$when}";
+    $subject = '=?UTF-8?B?' . base64_encode(hp_one_line("Booking confirmed: {$booking['service']} — {$booking['name']} on {$when}")) . '?=';
     $boundary = md5(uniqid());
-    $from    = 'noreply@' . ($_SERVER['HTTP_HOST'] ?? 'localhost');
+    $from    = hp_mail_from();
 
     $plain  = "Booking confirmed.\n\nClient: {$booking['name']}\nService: {$booking['service']}\nDate: {$when}\n";
     if ($booking['email']) $plain .= "Email: {$booking['email']}\n";
@@ -73,7 +83,9 @@ function pushEmail($to, $booking, $ical) {
 // ── CalDAV ─────────────────────────────────────────────────────────────────────
 
 function caldavRequest($method, $url, $user, $pass, $body = null, $extraHeaders = []) {
-    $headers = array_merge(['Content-Type: application/xml; charset=utf-8'], $extraHeaders);
+    if (!preg_match('#^https://#i', $url)) return ['body'=>'', 'code'=>0, 'error'=>'The calendar address must start with https://'];
+    $hasType = (bool)preg_grep('/^Content-Type:/i', $extraHeaders);
+    $headers = array_merge($hasType ? [] : ['Content-Type: application/xml; charset=utf-8'], $extraHeaders);
     if ($body !== null) $headers[] = 'Content-Length: ' . strlen($body);
 
     $ch = curl_init($url);
@@ -82,8 +94,10 @@ function caldavRequest($method, $url, $user, $pass, $body = null, $extraHeaders 
         CURLOPT_HTTPHEADER     => $headers,
         CURLOPT_USERPWD        => "{$user}:{$pass}",
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_FOLLOWLOCATION  => true,
+        CURLOPT_PROTOCOLS       => CURLPROTO_HTTPS,
+        CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+        CURLOPT_SSL_VERIFYPEER  => true,
         CURLOPT_TIMEOUT        => 15,
     ]);
     if ($body !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
@@ -154,7 +168,7 @@ function discoverCaldav($url, $user, $pass) {
 }
 
 function pushCaldav($url, $user, $pass, $ical) {
-    $uid = 'gm-' . bin2hex(random_bytes(8));
+    $uid = 'hp-' . bin2hex(random_bytes(8));
     $url = rtrim($url, '/') . "/{$uid}.ics";
     $resp = caldavRequest('PUT', $url, $user, $pass, $ical, ['Content-Type: text/calendar; charset=utf-8']);
     if ($resp['error']) return ['ok'=>false,'error'=>$resp['error']];
@@ -198,7 +212,7 @@ function pushGoogle($saJson, $calId, $booking) {
     $token = getGoogleToken($sa);
     if (!$token) return ['ok'=>false,'error'=>'Could not obtain Google access token — check service account JSON and Calendar API is enabled'];
 
-    $date = $booking['date'] ?? date('Y-m-d');
+    $date = $booking['date'] ?: date('Y-m-d');
     $time = trim($booking['time'] ?? '');
 
     if ($time && preg_match('/^(\d{1,2}):(\d{2})$/', $time, $m)) {

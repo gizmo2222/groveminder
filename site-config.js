@@ -48,10 +48,9 @@ const SITE_CONFIG = {
         { id: 'service3', icon: '🤝', name: 'Service Three', desc: 'Add or remove services from the admin panel — these defaults are placeholders to get the page rendering.', active: true, rate: { base: '', min: '', notes: '', public: false } },
     ],
 
-    defaultTestimonials: [
-        { name: 'Sample Client',   role: 'Long-time customer', quote: 'Replace these with real testimonials from the admin panel — visitors can also submit their own from the public site.', stars: 5 },
-        { name: 'Another Client',  role: '',                   quote: 'Approved testimonials show up here on the public site. Manage them under Testimonials in the admin panel.',          stars: 5 },
-    ],
+    // Real testimonials are approved in the admin panel. Leave this empty: the
+    // public page holds the space with a short note until the first one is published.
+    defaultTestimonials: [],
 
     defaultFaq: [
         { q: 'What services do you offer?',     a: 'Edit this answer in the admin panel under FAQ. Visitors expect a quick, clear summary of what you do.' },

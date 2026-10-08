@@ -557,6 +557,29 @@
             padding: 1.75rem;
         }
 
+        /* Holds the space until the first testimonials are published */
+        .testimonials-empty {
+            grid-column: 1 / -1;
+            border: 1px dashed color-mix(in srgb, var(--accent) 30%, transparent);
+            border-radius: 10px;
+            padding: 2.75rem 1.75rem;
+            text-align: center;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            color: color-mix(in srgb, var(--white) 65%, transparent);
+        }
+
+        /* Spam trap: hidden from people, visible to form-filling bots */
+        .hp-field {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
         .testimonial-stars {
             color: var(--accent);
             font-size: 0.9rem;
@@ -870,20 +893,21 @@
                 <div class="booking-form">
                     <h3 class="form-title">Request a Booking</h3>
                     <form id="bookingForm" novalidate>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="b-name">Your Name *</label>
-                                <input type="text" id="b-name" name="name" required placeholder="Jane Smith">
+                                <input type="text" id="b-name" maxlength="100" name="name" required placeholder="Jane Smith">
                             </div>
                             <div class="form-group">
                                 <label for="b-email">Email *</label>
-                                <input type="email" id="b-email" name="email" required placeholder="jane@email.com">
+                                <input type="email" id="b-email" maxlength="200" name="email" required placeholder="jane@email.com">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="b-phone">Phone</label>
-                                <input type="tel" id="b-phone" name="phone" placeholder="(555) 000-0000">
+                                <input type="tel" id="b-phone" maxlength="40" name="phone" placeholder="(555) 000-0000">
                             </div>
                             <div class="form-group">
                                 <label for="b-service">Service *</label>
@@ -909,7 +933,7 @@
                         </div>
                         <div class="form-group">
                             <label for="b-notes">Notes</label>
-                            <textarea id="b-notes" name="notes" placeholder="Ages of children, special needs, expected duration, etc."></textarea>
+                            <textarea id="b-notes" maxlength="2000" name="notes" placeholder="Ages of children, special needs, expected duration, etc."></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width:100%">Send Booking Request</button>
                         <p class="form-note">I'll review your request and get back to you within 24 hours. No commitment until you hear from me.</p>
@@ -936,19 +960,20 @@
         <div class="ref-form-wrap">
             <h3 class="form-title">Leave a Testimonial</h3>
             <form id="refForm" novalidate>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="r-name">Your Name *</label>
-                        <input type="text" id="r-name" required placeholder="Your name">
+                        <input type="text" id="r-name" maxlength="100" required placeholder="Your name">
                     </div>
                     <div class="form-group">
                         <label for="r-role">How You Know Me</label>
-                        <input type="text" id="r-role" placeholder="e.g. Nanny Client · 2 years">
+                        <input type="text" id="r-role" maxlength="100" placeholder="e.g. Nanny Client · 2 years">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="r-email">Email <span style="font-weight:400;opacity:0.6">(optional — for a thank-you note)</span></label>
-                    <input type="email" id="r-email" placeholder="your@email.com">
+                    <input type="email" id="r-email" maxlength="200" placeholder="your@email.com">
                 </div>
                 <div class="form-group">
                     <label>How did I do?</label>
@@ -962,7 +987,7 @@
                 </div>
                 <div class="form-group">
                     <label for="r-ref">Your Testimonial *</label>
-                    <textarea id="r-ref" required placeholder="Share your experience working with me..."></textarea>
+                    <textarea id="r-ref" maxlength="2000" required placeholder="Share your experience working with me..."></textarea>
                 </div>
                 <button type="submit" class="btn-primary">Submit Testimonial</button>
                 <div class="success-msg ref-success" id="refSuccess">✓ Thank you! Your testimonial has been submitted — I'll review it shortly.</div>
@@ -985,17 +1010,18 @@
                 <div class="qa-form">
                     <h3 class="form-title">Ask a Question</h3>
                     <form id="qaForm" novalidate>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-group">
                             <label for="q-name">Your Name *</label>
-                            <input type="text" id="q-name" name="name" required placeholder="Your name">
+                            <input type="text" id="q-name" maxlength="100" name="name" required placeholder="Your name">
                         </div>
                         <div class="form-group">
                             <label for="q-email">Email *</label>
-                            <input type="email" id="q-email" name="email" required placeholder="your@email.com">
+                            <input type="email" id="q-email" maxlength="200" name="email" required placeholder="your@email.com">
                         </div>
                         <div class="form-group">
                             <label for="q-question">Your Question *</label>
-                            <textarea id="q-question" name="question" required style="min-height:110px" placeholder="What would you like to know?"></textarea>
+                            <textarea id="q-question" maxlength="2000" name="question" required style="min-height:110px" placeholder="What would you like to know?"></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width:100%">Ask Away</button>
                         <div class="success-msg" id="qaSuccess">✓ Question received! I'll reply to your email within 24 hours.</div>
@@ -1020,14 +1046,15 @@
                 <div class="rates-form">
                     <h3 class="form-title">Request Rate Info</h3>
                     <form id="ratesForm" novalidate>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="ra-name">Your Name *</label>
-                                <input type="text" id="ra-name" name="name" required placeholder="Your name">
+                                <input type="text" id="ra-name" maxlength="100" name="name" required placeholder="Your name">
                             </div>
                             <div class="form-group">
                                 <label for="ra-email">Email *</label>
-                                <input type="email" id="ra-email" name="email" required placeholder="your@email.com">
+                                <input type="email" id="ra-email" maxlength="200" name="email" required placeholder="your@email.com">
                             </div>
                         </div>
                         <div class="form-group">
@@ -1043,7 +1070,7 @@
                         </div>
                         <div class="form-group">
                             <label for="ra-details">Details</label>
-                            <textarea id="ra-details" name="details" placeholder="Number of children, typical hours per week, any special considerations..."></textarea>
+                            <textarea id="ra-details" maxlength="2000" name="details" placeholder="Number of children, typical hours per week, any special considerations..."></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width:100%">Request Rate Info</button>
                         <div class="success-msg" id="ratesSuccess">✓ Got it! I'll send rate details to your email shortly.</div>
@@ -1076,7 +1103,7 @@
 
 <!-- ── Footer ─────────────────────────────────────────────────── -->
 <footer>
-    <p><span id="footerSiteName">🌳 GroveMinder</span> &nbsp;·&nbsp; <a href="mailto:hello@example.com" id="footerEmail">hello@example.com</a></p>
+    <p><span id="footerSiteName">🌳 GroveMinder</span> <span id="footerEmailWrap" hidden> &nbsp;·&nbsp; <a id="footerEmail"></a></span></p>
     <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.6">© <span id="footerYear">2026</span> <span id="footerCopyright">GroveMinder</span>. All rights reserved.</p>
 </footer>
 
@@ -1101,8 +1128,6 @@ const DEFAULTS = {
 };
 
 let AVAILABLE_DATES = [];
-let emailTemplates = {};
-let adminEmail     = '';
 
 async function loadConfig() {
     let cfg = DEFAULTS;
@@ -1114,8 +1139,6 @@ async function loadConfig() {
 }
 
 function applyConfig(cfg) {
-    emailTemplates = cfg.emailTemplates || {};
-    adminEmail     = cfg.email          || '';
 
     // Theme — admin's saved choice overrides the file-level default
     if (cfg.theme && typeof applyTheme === 'function') applyTheme(cfg.theme, cfg.colors || {});
@@ -1124,6 +1147,7 @@ function applyConfig(cfg) {
     if (cfg.email) {
         document.getElementById('footerEmail').href = `mailto:${cfg.email}`;
         document.getElementById('footerEmail').textContent = cfg.email;
+        document.getElementById('footerEmailWrap').hidden = false;
     }
 
     // Payment buttons
@@ -1142,20 +1166,20 @@ function applyConfig(cfg) {
     document.getElementById('servicesGrid').innerHTML = active.map(s => {
         const r = s.rate;
         const rateHtml = (r && r.public && r.base)
-            ? `<p class="service-rate">$${r.base}/hr${r.min ? ' · ' + r.min + ' hr min' : ''}${r.notes ? '<span class="service-rate-note">' + r.notes + '</span>' : ''}</p>`
+            ? `<p class="service-rate">$${esc(r.base)}/hr${r.min ? ' · ' + esc(r.min) + ' hr min' : ''}${r.notes ? '<span class="service-rate-note">' + esc(r.notes) + '</span>' : ''}</p>`
             : '';
         return `
         <div class="service-card">
-            <span class="service-icon">${s.icon}</span>
-            <h3 class="service-name">${s.name}</h3>
-            <p class="service-desc">${s.desc}</p>
+            <span class="service-icon">${esc(s.icon)}</span>
+            <h3 class="service-name">${esc(s.name)}</h3>
+            <p class="service-desc">${esc(s.desc)}</p>
             ${rateHtml}
         </div>`;
     }).join('');
 
     // Service dropdowns
     const opts = ['<option value="">Select...</option>',
-        ...active.map(s => `<option>${s.name}</option>`),
+        ...active.map(s => `<option>${esc(s.name)}</option>`),
         '<option>Other</option>'
     ].join('');
     document.getElementById('b-service').innerHTML  = opts;
@@ -1166,57 +1190,46 @@ function applyConfig(cfg) {
     renderCalendar();
 
     // Testimonials
-    const approved = (cfg.testimonials || DEFAULTS.testimonials);
+    const approved = (cfg.testimonials || DEFAULTS.testimonials).filter(t => t.quote && t.name);
     document.getElementById('testimonialsGrid').innerHTML = approved.length
         ? approved.map(t => `
         <div class="testimonial-card">
             <div class="testimonial-stars">${'★'.repeat(Math.max(1, Math.min(5, t.stars || 5)))}</div>
-            <p class="testimonial-quote">"${t.quote}"</p>
-            <p class="testimonial-author">${t.name}</p>
-            <p class="testimonial-role">${t.role || ''}</p>
+            <p class="testimonial-quote">"${esc(t.quote)}"</p>
+            <p class="testimonial-author">${esc(t.name)}</p>
+            <p class="testimonial-role">${esc(t.role)}</p>
         </div>`).join('')
-        : '';
+        : '<p class="testimonials-empty">Kind words from the people I work with will be shared here soon.</p>';
 
     // FAQ
     document.getElementById('faqList').innerHTML = (cfg.faq || DEFAULTS.faq).map(item => `
         <div class="faq-item">
-            <button class="faq-question">${item.q} <span class="arrow">▾</span></button>
-            <div class="faq-answer"><div class="faq-answer-inner">${item.a}</div></div>
+            <button class="faq-question">${esc(item.q)} <span class="arrow">▾</span></button>
+            <div class="faq-answer"><div class="faq-answer-inner">${esc(item.a)}</div></div>
         </div>`).join('');
     initFaqAccordion();
 }
 
 // ── Email ──────────────────────────────────────────────────────────
-const DEFAULT_EMAIL_TEMPLATES = {
-    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
-    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
-    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
-    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
-    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
-    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
-    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
-    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
-    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
-};
-
-function fillTemplate(str, vars) {
-    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
-}
-
-function sendMail(type, to, vars) {
-    if (!to) return;
-    const tmpl = emailTemplates[type] || DEFAULT_EMAIL_TEMPLATES[type];
-    if (!tmpl) return;
-    fetch('/mailer.php', {
+// The server picks the recipients and builds the messages from the saved
+// templates; the page only says which form was sent and what was typed.
+function notify(form, vars) {
+    fetch('mailer.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({
-            to,
-            subject:  fillTemplate(tmpl.subject, vars),
-            body:     fillTemplate(tmpl.body,    vars),
-            replyTo:  vars._replyTo || '',
-        }),
+        body:    JSON.stringify({ form, vars }),
     }).catch(() => {});
+}
+
+function esc(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── Spam trap ──────────────────────────────────────────────────────
+// Bots fill in the hidden "website" field, or submit faster than a person can type.
+const PAGE_LOADED_AT = Date.now();
+function looksLikeBot(form) {
+    return !!form.querySelector('.hp-field input')?.value || Date.now() - PAGE_LOADED_AT < 3000;
 }
 
 // ── Validation ────────────────────────────────────────────────
@@ -1315,25 +1328,6 @@ document.querySelectorAll('#navLinks a').forEach(a => {
 });
 
 // ── Forms ──────────────────────────────────────────────────────
-const FORM_ENDPOINT = '';
-
-async function submitForm(form, successId, btnLabel) {
-    const btn = form.querySelector('button[type=submit]');
-    btn.disabled = true;
-    btn.textContent = 'Sending…';
-    try {
-        if (FORM_ENDPOINT) {
-            await fetch(FORM_ENDPOINT, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
-        }
-        form.reset();
-        document.getElementById(successId).style.display = 'block';
-    } catch {
-        document.getElementById(successId).style.display = 'block';
-    }
-    btn.disabled = false;
-    btn.textContent = btnLabel;
-}
-
 document.getElementById('bookingForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form    = e.target;
@@ -1346,6 +1340,7 @@ document.getElementById('bookingForm').addEventListener('submit', async e => {
     const date    = document.getElementById('b-date').value;
     const time    = document.getElementById('b-time').value;
     const notes   = document.getElementById('b-notes').value.trim();
+    if (looksLikeBot(form)) { form.reset(); document.getElementById('bookSuccess').style.display = 'block'; return; }
     btn.disabled = true;
     btn.textContent = 'Sending…';
     try {
@@ -1355,9 +1350,7 @@ document.getElementById('bookingForm').addEventListener('submit', async e => {
     document.getElementById('bookSuccess').style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Send Booking Request';
-    const vars = { name, email, phone, service, date, time: time ? ' at ' + time : '', notes, siteName: SITE_CONFIG.siteName };
-    sendMail('booking_visitor', email, vars);
-    if (adminEmail) sendMail('booking_admin', adminEmail, { ...vars, _replyTo: email });
+    notify('booking', { name, email, phone, service, date, time, notes });
 });
 document.getElementById('qaForm').addEventListener('submit', e => {
     e.preventDefault();
@@ -1366,14 +1359,13 @@ document.getElementById('qaForm').addEventListener('submit', e => {
     const name     = document.getElementById('q-name').value.trim();
     const email    = document.getElementById('q-email').value.trim();
     const question = document.getElementById('q-question').value.trim();
+    const bot = looksLikeBot(form);
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true; btn.textContent = 'Sending…';
     form.reset();
     document.getElementById('qaSuccess').style.display = 'block';
     btn.disabled = false; btn.textContent = 'Ask Away';
-    const vars = { name, email, question, siteName: SITE_CONFIG.siteName };
-    sendMail('question_visitor', email, vars);
-    if (adminEmail) sendMail('question_admin', adminEmail, { ...vars, _replyTo: email });
+    if (!bot) notify('question', { name, email, question });
 });
 
 document.getElementById('ratesForm').addEventListener('submit', e => {
@@ -1384,14 +1376,13 @@ document.getElementById('ratesForm').addEventListener('submit', e => {
     const email   = document.getElementById('ra-email').value.trim();
     const service = document.getElementById('ra-service').value;
     const details = document.getElementById('ra-details').value.trim();
+    const bot = looksLikeBot(form);
     const btn = form.querySelector('button[type=submit]');
     btn.disabled = true; btn.textContent = 'Sending…';
     form.reset();
     document.getElementById('ratesSuccess').style.display = 'block';
     btn.disabled = false; btn.textContent = 'Request Rate Info';
-    const vars = { name, email, service, details, siteName: SITE_CONFIG.siteName };
-    sendMail('rates_visitor', email, vars);
-    if (adminEmail) sendMail('rates_admin', adminEmail, { ...vars, _replyTo: email });
+    if (!bot) notify('rates', { name, email, service, details });
 });
 
 // ── Zelle button ───────────────────────────────────────────────
@@ -1427,6 +1418,7 @@ document.getElementById('refForm').addEventListener('submit', async e => {
     const btn    = form.querySelector('button[type=submit]');
     const rName  = document.getElementById('r-name').value.trim();
     const rEmail = document.getElementById('r-email').value.trim();
+    if (looksLikeBot(form)) { form.reset(); document.getElementById('refSuccess').style.display = 'block'; return; }
     btn.disabled = true;
     btn.textContent = 'Submitting…';
     try {
@@ -1446,7 +1438,7 @@ document.getElementById('refForm').addEventListener('submit', async e => {
     document.getElementById('refSuccess').style.display = 'block';
     btn.disabled = false;
     btn.textContent = 'Submit Reference';
-    if (rEmail) sendMail('reference_visitor', rEmail, { name: rName, siteName: SITE_CONFIG.siteName });
+    if (rEmail) notify('reference', { name: rName, email: rEmail });
 });
 
 // ── FAQ ────────────────────────────────────────────────────────

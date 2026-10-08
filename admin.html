@@ -1285,22 +1285,22 @@ function renderServicesList() {
                 <input type="checkbox" ${svc.active ? 'checked' : ''}>
                 <span class="toggle-slider"></span>
             </label>
-            <input class="svc-icon-input" type="text" value="${svc.icon || ''}" maxlength="2" title="Icon (emoji)">
+            <input class="svc-icon-input" type="text" value="${escHtml(svc.icon)}" maxlength="2" title="Icon (emoji)">
             <div class="svc-fields">
-                <input class="svc-name" type="text" value="${svc.name || ''}" placeholder="Service name"
+                <input class="svc-name" type="text" value="${escHtml(svc.name)}" placeholder="Service name"
                     style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-weight:700;background:var(--bg);width:100%">
                 <textarea class="svc-desc" placeholder="Description"
-                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);width:100%;resize:vertical;min-height:60px">${svc.desc || ''}</textarea>
+                    style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);width:100%;resize:vertical;min-height:60px">${escHtml(svc.desc)}</textarea>
                 <button type="button" class="svc-delete" style="background:none;border:none;color:#aaa;font-size:0.75rem;cursor:pointer;padding:0.25rem 0;margin-top:0.3rem;text-align:left">✕ remove</button>
                 <div class="rate-section">
                     <div class="rate-row">
                         <div class="field-prefix">
                             <span class="field-prefix-label">$/hr</span>
-                            <input type="number" class="rate-base" min="0" step="0.50" value="${r.base || ''}" placeholder="—">
+                            <input type="number" class="rate-base" min="0" step="0.50" value="${escHtml(r.base)}" placeholder="—">
                         </div>
                         <div class="field-prefix">
                             <span class="field-prefix-label">min hrs</span>
-                            <input type="number" class="rate-min" min="0" step="0.5" value="${r.min || ''}" placeholder="—">
+                            <input type="number" class="rate-min" min="0" step="0.5" value="${escHtml(r.min)}" placeholder="—">
                         </div>
                         <label class="rate-public-label">
                             <input type="checkbox" class="rate-public" ${r.public ? 'checked' : ''}>
@@ -1308,7 +1308,7 @@ function renderServicesList() {
                         </label>
                     </div>
                     <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. +$10 for 2+ kids)"
-                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg);width:100%;resize:vertical">${r.notes || ''}</textarea>
+                        style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg);width:100%;resize:vertical">${escHtml(r.notes)}</textarea>
                 </div>
             </div>
         `;
@@ -1375,8 +1375,8 @@ async function syncCalendar() {
     result.style.display = 'none';
 
     try {
-        const proxy = `/ical-proxy.php?url=${encodeURIComponent(url)}`;
-        const resp = await fetch(proxy);
+        const proxy = `ical-proxy.php?url=${encodeURIComponent(url)}`;
+        const resp = await fetch(proxy, { headers: await authHeaders() });
         if (!resp.ok) throw new Error(await resp.text());
         const dates = parseIcal(await resp.text());
         const today = new Date().toISOString().slice(0, 10);
@@ -1401,7 +1401,7 @@ async function syncCalendar() {
         }
         result.style.display = 'block';
     } catch (e) {
-        result.innerHTML = `<p style="color:var(--danger);padding:0.75rem 0">Sync failed: ${e.message}</p>`;
+        result.innerHTML = `<p style="color:var(--danger);padding:0.75rem 0">Sync failed: ${escHtml(e.message)}</p>`;
         result.style.display = 'block';
     }
     btn.disabled = false;
@@ -1470,8 +1470,8 @@ async function loadPendingSubmissions() {
             card.className = 'testimonial-admin-card';
             card.innerHTML = `
                 <div class="tac-stars">${stars}</div>
-                <p class="tac-quote">"${d.quote}"</p>
-                <p class="tac-meta"><strong>${d.name}</strong>${d.role ? ' · ' + d.role : ''}</p>
+                <p class="tac-quote">"${escHtml(d.quote)}"</p>
+                <p class="tac-meta"><strong>${escHtml(d.name)}</strong>${d.role ? ' · ' + escHtml(d.role) : ''}</p>
                 <div class="tac-actions">
                     <button class="btn-primary tac-approve">Approve</button>
                     <button class="btn-sm tac-reject">Dismiss</button>
@@ -1481,7 +1481,7 @@ async function loadPendingSubmissions() {
             el.appendChild(card);
         });
     } catch (e) {
-        el.innerHTML = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${e.message}</p>`;
+        el.innerHTML = `<p style="color:var(--danger);font-size:0.875rem">Failed to load: ${escHtml(e.message)}</p>`;
     }
 }
 
@@ -1525,12 +1525,12 @@ function renderApprovedList() {
                     ${[5,4,3,2,1].map(n => `<option value="${n}"${(t.stars||5)===n?' selected':''}>${'★'.repeat(n)}</option>`).join('')}
                 </select>
             </div>
-            <input class="ta-name" type="text" value="${t.name}" placeholder="Name"
+            <input class="ta-name" type="text" value="${escHtml(t.name)}" placeholder="Name"
                 style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--bg)">
-            <input class="ta-role" type="text" value="${t.role || ''}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
+            <input class="ta-role" type="text" value="${escHtml(t.role)}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
                 style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg)">
             <textarea class="ta-quote" rows="3" placeholder="Their testimonial"
-                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${t.quote}</textarea>
+                style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${escHtml(t.quote)}</textarea>
             <div class="tac-actions" style="margin-top:0.5rem">
                 <button class="btn-sm ta-delete" style="color:var(--danger);border-color:var(--danger)">Remove</button>
             </div>`;
@@ -1567,10 +1567,10 @@ function renderFaqList() {
         row.className = 'faq-admin-row';
         row.innerHTML = `
             <div style="flex:1">
-                <input class="faq-q" type="text" value="${item.q}" placeholder="Question"
+                <input class="faq-q" type="text" value="${escHtml(item.q)}" placeholder="Question"
                     style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--bg)">
                 <textarea class="faq-a" rows="3" placeholder="Answer"
-                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${item.a}</textarea>
+                    style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${escHtml(item.a)}</textarea>
             </div>
             <button class="btn-sm faq-del" style="color:var(--danger);border-color:var(--danger);align-self:flex-start;flex-shrink:0">✕</button>`;
         row.querySelector('.faq-del').addEventListener('click', () => {
@@ -1664,9 +1664,9 @@ document.getElementById('findCalendarsBtn').addEventListener('click', async () =
     result.style.display = 'none';
 
     try {
-        const resp = await fetch('/cal-push.php', {
+        const resp = await fetch('cal-push.php', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
             body:    JSON.stringify({ method: 'caldav_discover', booking: {}, cal: { caldavUrl: url, caldavUser: user, caldavPass: pass } }),
         });
         const data = await resp.json();
@@ -1759,7 +1759,13 @@ function renderBookingList(container, bookings, listType) {
 }
 
 function escHtml(str) {
-    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// The PHP endpoints only act for a signed-in admin; they check this token
+async function authHeaders() {
+    const user = auth.currentUser;
+    return user ? { 'X-Firebase-Token': await user.getIdToken() } : {};
 }
 
 async function confirmBooking(booking) {
@@ -1768,7 +1774,7 @@ async function confirmBooking(booking) {
         showToast('✓ Booking confirmed.', 'success');
         loadBookings();
         calPush(booking);
-        if (booking.email) sendMail('booking_confirmed', booking.email, buildVars(booking));
+        if (booking.email) sendMail('booking_confirmed', buildVars(booking));
     } catch (e) {
         showToast("Couldn't confirm this booking — try again.", 'error');
     }
@@ -1779,7 +1785,7 @@ async function declineBooking(booking) {
         await db.collection('bookings').doc(booking.id).update({ status: 'declined' });
         showToast('Booking declined.', 'success');
         loadBookings();
-        if (booking.email) sendMail('booking_declined', booking.email, buildVars(booking));
+        if (booking.email) sendMail('booking_declined', buildVars(booking));
     } catch (e) {
         showToast("Couldn't decline this booking — try again.", 'error');
     }
@@ -1824,9 +1830,9 @@ async function calPush(booking) {
     }
 
     try {
-        const resp = await fetch('/cal-push.php', {
+        const resp = await fetch('cal-push.php', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
             body:    JSON.stringify(payload),
         });
         const data = await resp.json();
@@ -1853,36 +1859,20 @@ const EMAIL_TEMPLATE_TYPES = [
     { key: 'rates_admin',       label: 'Rate info request',          hint: 'Sent to you when someone requests rate info. Available: {name} {email} {service} {details}' },
 ];
 
-const DEFAULT_EMAIL_TEMPLATES = {
-    booking_visitor:   { subject: 'Booking request received — {service} on {date}', body: 'Hi {name},\n\nThank you for reaching out! I\'ve received your booking request for {service} on {date}{time}.\n\nI\'ll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}' },
-    booking_admin:     { subject: 'New booking request — {name} ({service}, {date})', body: 'New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}' },
-    booking_confirmed: { subject: 'Booking confirmed — {service} on {date}', body: 'Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}' },
-    booking_declined:  { subject: 'Re: Booking request — {service} on {date}', body: 'Hi {name},\n\nThank you for your request. Unfortunately I\'m not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I\'d love to find a time that works.\n\n{siteName}' },
-    reference_visitor: { subject: 'Thank you for your reference!', body: 'Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}' },
-    question_visitor:  { subject: 'Got your question!', body: 'Hi {name},\n\nThanks for reaching out! I\'ve received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}' },
-    question_admin:    { subject: 'New question from {name}', body: 'Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond.' },
-    rates_visitor:     { subject: 'Rate info request received', body: 'Hi {name},\n\nThanks for your interest in {service}! I\'ve received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}' },
-    rates_admin:       { subject: 'Rate info request — {name} ({service})', body: 'Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond.' },
-};
+// Defaults live in email-templates.json so the server and this editor share one copy
+let DEFAULT_EMAIL_TEMPLATES = {};
+fetch('email-templates.json')
+    .then(r => r.json())
+    .then(t => { DEFAULT_EMAIL_TEMPLATES = t; renderTemplateEditor(); })
+    .catch(() => {});
 
-function fillTemplate(str, vars) {
-    return (str || '').replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
-}
-
-async function sendMail(type, to, vars) {
-    if (!to) return;
-    const tmpl = config.emailTemplates?.[type] || DEFAULT_EMAIL_TEMPLATES[type];
-    if (!tmpl) return;
+// The server builds the message from the saved template; we only say which one
+async function sendMail(form, vars) {
     try {
-        const resp = await fetch('/mailer.php', {
+        const resp = await fetch('mailer.php', {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({
-                to,
-                subject: fillTemplate(tmpl.subject, vars),
-                body:    fillTemplate(tmpl.body,    vars),
-                replyTo: vars._replyTo || '',
-            }),
+            headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
+            body:    JSON.stringify({ form, vars }),
         });
         const data = await resp.json();
         if (!data.ok) showToast("Email delivery failed — check your contact email in Settings.", 'error');
@@ -1898,9 +1888,8 @@ function buildVars(booking) {
         phone:    booking.phone   || '',
         service:  booking.service || '',
         date:     booking.date    || '',
-        time:     booking.time ? ' at ' + booking.time : '',
+        time:     booking.time    || '',
         notes:    booking.notes   || '',
-        siteName: SITE_CONFIG.siteName,
     };
 }
 

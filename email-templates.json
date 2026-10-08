@@ -1,0 +1,11 @@
+{
+    "booking_visitor":   { "subject": "Booking request received — {service} on {date}", "body": "Hi {name},\n\nThank you for reaching out! I've received your booking request for {service} on {date}{time}.\n\nI'll review it and get back to you within 24 hours to confirm.\n\nTalk soon,\n{siteName}" },
+    "booking_admin":     { "subject": "New booking request — {name} ({service}, {date})", "body": "New booking request:\n\nName:    {name}\nEmail:   {email}\nPhone:   {phone}\nService: {service}\nDate:    {date}{time}\nNotes:   {notes}" },
+    "booking_confirmed": { "subject": "Booking confirmed — {service} on {date}", "body": "Hi {name},\n\nGreat news — your booking is confirmed!\n\nService: {service}\nDate:    {date}{time}\n\nIf you need to reschedule or have any questions, just reply to this email.\n\nLooking forward to it!\n{siteName}" },
+    "booking_declined":  { "subject": "Re: Booking request — {service} on {date}", "body": "Hi {name},\n\nThank you for your request. Unfortunately I'm not available on {date} for {service}.\n\nFeel free to check the calendar for other available dates and send a new request — I'd love to find a time that works.\n\n{siteName}" },
+    "reference_visitor": { "subject": "Thank you for your reference!", "body": "Hi {name},\n\nThank you so much for taking the time to leave a reference — I really appreciate it!\n\nIt will be reviewed and added to the site shortly.\n\n{siteName}" },
+    "question_visitor":  { "subject": "Got your question!", "body": "Hi {name},\n\nThanks for reaching out! I've received your question and will reply to this email within 24 hours.\n\nTalk soon,\n{siteName}" },
+    "question_admin":    { "subject": "New question from {name}", "body": "Question from {name} ({email}):\n\n{question}\n\n---\nReply directly to this email to respond." },
+    "rates_visitor":     { "subject": "Rate info request received", "body": "Hi {name},\n\nThanks for your interest in {service}! I've received your request and will send you rate details within 24 hours.\n\nTalk soon,\n{siteName}" },
+    "rates_admin":       { "subject": "Rate info request — {name} ({service})", "body": "Rate info request from {name} ({email}):\n\nService: {service}\n\n{details}\n\n---\nReply directly to this email to respond." }
+}
