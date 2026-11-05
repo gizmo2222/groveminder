@@ -1,6 +1,6 @@
 # GroveMinder — Availability & Booking Site
 
-A personal booking and availability site with a Firebase-backed admin panel. Built as a reusable template — `site-config.js` holds everything specific to one site.
+A personal booking and availability site with a Firebase-backed admin panel. Built as a reusable product: `site-config.js` holds everything specific to one site, and a real site is a small "theme" repo (that file plus its images) laid over this one at deploy time — see [Making a theme](#4-making-a-theme).
 
 ## Stack
 
@@ -23,9 +23,13 @@ The demo has no backend:
 
 Everything a visitor changes — bookings, settings, theme, testimonials — stays in their browser and affects nobody else.
 
-To run the demo locally: copy `site-config.demo.js` over `site-config.js` in a scratch copy and serve the folder (`python -m http.server`).
+To run the demo locally (needs Python; it serves a temporary copy on `http://localhost:8080/`):
 
-**For a real site,** edit `site-config.js` as below and deploy all the files, including the PHP endpoints — see step 7 and the [Files](#files) table. `demo-firebase.js` can ship too; it stays inactive.
+```powershell
+.\tools\preview.ps1
+```
+
+**A real site** is a theme repo with its own `site-config.js`, deployed with the PHP endpoints — see [Making a theme](#4-making-a-theme). `demo-firebase.js` ships with it too; it stays inactive.
 
 ## Setting up a new site
 
@@ -55,7 +59,36 @@ The rules:
 - let visitors **create** bookings and testimonials, but only well-formed ones with sensible lengths, a valid email and status `pending` / `approved: false`
 - keep `bookings`, `testimonials`, `private` (calendar credentials) and config writes admin-only
 
-### 4. Edit site-config.js
+### 4. Making a theme
+
+A site lives in its own small repo, a **theme**. It holds only what is specific to that site; the pages, `site-core.js` and the PHP stay here and are fetched at a pinned version on every deploy, so a theme never carries a copy of the product.
+
+| In the theme repo | What it is |
+|---|---|
+| `site-config.js` | A copy of this repo's `site-config.js`, filled in (below) |
+| Images, e.g. `logo.png` | Optional. The `heroImage` named in `site-config.js` is uploaded automatically; list any others in `THEME_FILES` in the workflow |
+| `.github/workflows/deploy.yml` | A copy of [`theme-template/deploy.yml`](theme-template/deploy.yml) with the four values marked `CHANGE` set |
+| `.github/known_hosts` | Your server's SSH host keys (below) |
+
+With this repo and the new one side by side (here `my-site`, hosted at `example.com`):
+
+```powershell
+New-Item -ItemType Directory -Force my-site\.github\workflows
+```
+
+```powershell
+Copy-Item groveminder\site-config.js my-site\
+```
+
+```powershell
+Copy-Item groveminder\theme-template\deploy.yml my-site\.github\workflows\
+```
+
+```powershell
+cmd /c "ssh-keyscan example.com > my-site\.github\known_hosts"
+```
+
+Then edit `my-site\site-config.js`. It is data only:
 
 ```js
 const SITE_CONFIG = {
@@ -65,11 +98,19 @@ const SITE_CONFIG = {
     navEmoji: "🌳",
     tagline:  "Your tagline here",
     heroDesc: "A short description of what you offer.",
+    heroImage: "",             // optional image shown in the hero instead of navEmoji
 
     // Pick one of the named themes (grove, coastal, lavender, slate, terracotta)
     // — or override individual colors in the `colors` block.
     theme: "grove",
     colors: {},
+    themePicker: true,         // false: fix the theme here and hide the admin's picker
+
+    // Optional wording. Anything left out keeps the product's neutral default.
+    copy: {
+        // navBook: "Book", navAsk: "Ask", testimonialsEmpty, notesPlaceholder,
+        // roleExample, ratesIntro, rateDetailsPlaceholder, rateNotesExample
+    },
 
     defaultServices: [ /* edit or replace */ ],
     defaultTestimonials: [],   // real ones are approved in the admin panel
@@ -77,9 +118,19 @@ const SITE_CONFIG = {
 };
 ```
 
-Themes can also be switched at runtime from the admin panel — that choice is saved in Firestore and overrides the file-level default.
+Themes can also be switched at runtime from the admin panel — that choice is saved in Firestore and overrides the file-level default. The `colors` overrides stay on top of whichever theme is active. With `themePicker: false` the theme in this file always wins and the admin's Appearance section is hidden.
 
-The PHP endpoints read `projectId` and `siteName` from this file too, so there is nothing to configure on the server.
+The PHP endpoints read `projectId` and `siteName` from this file too, so there is nothing to configure on the server. Keep those two values in double quotes.
+
+A theme only adds files. The deploy refuses a theme file with the same name as a product file, so the pages and PHP on a site are always exactly this repo's at the pinned version.
+
+**Preview** the theme over this product before pushing (run from this repo's folder; needs Python). PHP is not run, so no emails are sent, but the pages do talk to the theme's real Firebase project:
+
+```powershell
+.\tools\preview.ps1 -Theme ..\my-site
+```
+
+**Upgrading** a site to a newer GroveMinder: change `ref` in the theme's `deploy.yml` to the new tag and push the theme. A commit SHA works in place of a tag and can never be moved.
 
 Until the first testimonial is approved, the Testimonials section shows a short "kind words … will be shared here soon" note, so the space is held without inventing reviews.
 
@@ -95,7 +146,7 @@ The deploy signs in to the server with an SSH key, not a password.
    ```sh
    cat ~/.ssh/groveminder_deploy.pub | ssh USER@metacrystal.com "mkdir -p ~/.ssh && chmod 700 ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys"
    ```
-3. Add the **private** key as a GitHub secret:
+3. Add the **private** key as a GitHub secret (run this in the theme repo's folder, so the secret lands on that repo):
    ```sh
    gh secret set SSH_PRIVATE_KEY < ~/.ssh/groveminder_deploy
    ```
@@ -105,9 +156,11 @@ The deploy signs in to the server with an SSH key, not a password.
    ```
 4. Push (or use **Run workflow** on the Actions tab). The deploy log says "Deploy key: accepted by the server" when the key works. Then delete the `SFTP_PASSWORD` secret.
 
-The server's host keys are pinned in [`.github/known_hosts`](.github/known_hosts), so the deploy refuses to upload anywhere else. If your host ever changes its keys, refresh that file with `ssh-keyscan metacrystal.com`.
+The server's host keys are pinned in the repo's `.github/known_hosts` (this repo's is [here](.github/known_hosts)), so the deploy refuses to upload anywhere else. If your host ever changes its keys, refresh that file with `ssh-keyscan` as in step 4.
 
 ### 6. GitHub secrets
+
+Set these on the theme repo:
 
 | Secret | Value |
 |---|---|
@@ -115,23 +168,26 @@ The server's host keys are pinned in [`.github/known_hosts`](.github/known_hosts
 | `SSH_PRIVATE_KEY` | The deploy key from step 5 |
 | `SFTP_PASSWORD` | Optional. Only used if the key is refused; delete it once the key works |
 
-The workflow deploys to `metacrystal.com/groveminder/`. For another site, update `HOST` and `DEST` in `.github/workflows/deploy.yml` and regenerate `.github/known_hosts`. All requests use relative paths, so the site works from a subfolder.
+Where the site goes is set by `DEPLOY_HOST` and `DEPLOY_DEST` in the theme's `deploy.yml`. All requests use relative paths, so the site works from a subfolder.
 
 ### 7. Push to deploy
 
-```sh
+In the theme repo:
+
+```powershell
 git push
 ```
 
-GitHub Actions uploads the site files to the server. The admin panel is at `admin.html` in the same folder.
+GitHub Actions checks out the theme and GroveMinder at the pinned version, then [`tools/deploy.sh`](tools/deploy.sh) uploads the product's pages and PHP, the theme's `site-config.js` and its images. The admin panel is at `admin.html` in the same folder.
 
-**Note:** this repo's own workflow publishes the **demo** to `metacrystal.com/groveminder/` (see [Demo](#demo)). For a real site, change the workflow's upload list to send `site-config.js` itself and the PHP endpoints (`hp-lib.php`, `mailer.php`, `cal-push.php`, `ical-proxy.php`) instead of `site-config.demo.js`.
+**Note:** pushing *this* repo publishes the **demo** to `metacrystal.com/groveminder/` (see [Demo](#demo)) through the same script in demo mode. It does not change any site built on it: a site moves to a newer version only when its theme's pinned `ref` is changed.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `site-config.js` | Everything specific to one site |
+| `site-config.js` | Everything specific to one site. Data only; a theme repo supplies its own |
+| `site-core.js` | Product logic shared by both pages: theme presets, favicon, default wording |
 | `index.html` | Public site |
 | `admin.html` | Password-protected admin panel |
 | `mailer.php` | Sends the emails for form submissions, built from the saved templates |
@@ -142,8 +198,11 @@ GitHub Actions uploads the site files to the server. The admin panel is at `admi
 | `demo-firebase.js` | Offline Firebase stand-in, active only in demo mode |
 | `email-templates.json` | Default email templates, shared by `mailer.php` and the admin editor |
 | `firestore.rules` | Firestore security rules (publish in the Firebase console; not deployed to the server) |
-| `.github/workflows/deploy.yml` | Auto-deploy on push to `master` |
-| `.github/known_hosts` | Pinned SSH host keys for the server |
+| `tools/deploy.sh` | The SFTP upload, used by this repo's demo deploy and by every theme's deploy |
+| `tools/preview.ps1` | Local preview of the demo, or of a theme laid over this product |
+| `theme-template/deploy.yml` | Deploy workflow to copy into a theme repo |
+| `.github/workflows/deploy.yml` | Deploys the demo on push to `master` |
+| `.github/known_hosts` | Pinned SSH host keys for the demo's server |
 
 ## Admin features
 
@@ -153,7 +212,7 @@ GitHub Actions uploads the site files to the server. The admin panel is at `admi
 - **Rates** — private reference rates (shown publicly only if you choose)
 - **Testimonials** — approve or dismiss submitted ones, edit or remove approved ones
 - **FAQ** — add, edit, delete questions and answers
-- **Appearance** — pick a colour theme (Grove, Coastal, Lavender, Slate, Terracotta)
+- **Appearance** — pick a colour theme (Grove, Coastal, Lavender, Slate, Terracotta); hidden when the site sets `themePicker: false`
 
 ## Security and spam protection
 

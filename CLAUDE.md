@@ -1,7 +1,7 @@
 ## Design Context
 
 ### Project
-GroveMinder — a reusable, themable template for a personal booking and availability site. A single `site-config.js` customises identity, copy, default content, and theme; the admin panel (`/admin.html`) lets the operator manage the site at runtime, including switching between named colour themes saved to Firestore.
+GroveMinder — a reusable, themable template for a personal booking and availability site. A single `site-config.js` (data only; the logic that reads it is `site-core.js`) customises identity, copy, default content, and theme; the admin panel (`/admin.html`) lets the operator manage the site at runtime, including switching between named colour themes saved to Firestore.
 
 ### Users
 **Visitors (public site):** People considering booking a personal service from the operator. The primary job is to feel confident enough to reach out. Trust, warmth, and credibility are the deciding factors.
@@ -14,7 +14,7 @@ GroveMinder — a reusable, themable template for a personal booking and availab
 The template should feel personal rather than corporate, considered rather than templated. Each detail (serif headlines, gold-style accents, soft backgrounds, a single emoji as identity mark) is meant to read as "chosen", not "defaulted".
 
 ### Aesthetic Direction
-- **Themable palette.** The system uses six theme variables: `--primary`, `--primary-light`, `--primary-dark`, `--accent`, `--accent-light`, `--bg`. Five named presets ship in `site-config.js`: **Grove** (forest green + amber), **Coastal** (navy + gold), **Lavender** (plum + dusty rose), **Slate** (charcoal + emerald), **Terracotta** (rust + sun gold). New presets go in the `THEMES` object in `site-config.js`.
+- **Themable palette.** The system uses six theme variables: `--primary`, `--primary-light`, `--primary-dark`, `--accent`, `--accent-light`, `--bg`. Five named presets ship in `site-core.js`: **Grove** (forest green + amber), **Coastal** (navy + gold), **Lavender** (plum + dusty rose), **Slate** (charcoal + emerald), **Terracotta** (rust + sun gold). New presets go in the `THEMES` object in `site-core.js`.
 - **Typography:** Playfair Display for display, headings, and anything that should feel considered or elegant. Lato for all UI, body copy, and functional text. Italic Playfair for taglines and pull quotes.
 - **Spatial rhythm:** Generous. Wide section padding (5.5rem), breathing room inside cards. Never pack elements tightly.
 - **Motion:** Subtle and purposeful — the floating hero emoji is the personality in code. Hover effects lift cards and buttons slightly (`translateY(-2px)` to `-3px`). Nothing bouncy, nothing aggressive.
