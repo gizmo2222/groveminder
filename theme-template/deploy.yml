@@ -1,0 +1,45 @@
+# Deploy workflow for a site built on GroveMinder (a "theme").
+# Copy this file to .github/workflows/deploy.yml in the theme repo and change
+# the four values marked CHANGE. See the GroveMinder README → "Making a theme".
+#
+# The theme repo holds only its own files (site-config.js, images,
+# .github/known_hosts). Every deploy fetches the GroveMinder product at the
+# pinned version below and uploads the two together, so the theme never
+# carries a copy of the product's pages or PHP.
+
+name: Deploy to example.com                # CHANGE
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this theme
+        uses: actions/checkout@v5
+        with:
+          path: theme
+
+      # To take a newer GroveMinder, change `ref` to its tag and push.
+      - name: Checkout GroveMinder at the pinned version
+        uses: actions/checkout@v5
+        with:
+          repository: gizmo2222/groveminder
+          ref: v1.0.0                      # CHANGE when you upgrade
+          path: groveminder
+
+      - name: Upload via SFTP
+        working-directory: groveminder
+        env:
+          DEPLOY_HOST:     example.com                                   # CHANGE
+          DEPLOY_DEST:     /home/${{ secrets.SFTP_USER }}/example.com    # CHANGE
+          THEME_DIR:       ../theme
+          # Extra files to upload besides site-config.js and its heroImage
+          THEME_FILES:     ""
+          SFTP_USER:       ${{ secrets.SFTP_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSHPASS:         ${{ secrets.SFTP_PASSWORD }}
+        run: bash tools/deploy.sh

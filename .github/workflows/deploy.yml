@@ -12,66 +12,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Signs in with the SSH_PRIVATE_KEY secret when it is set. If SFTP_PASSWORD
-      # is also set, the password is only tried when the key is refused, which
-      # lets you add the key without a broken deploy in between. Once the key
-      # works, delete the SFTP_PASSWORD secret. See README → "Deploy key".
+      # This repo publishes the DEMO (DEPLOY_MODE: demo). A real site is a theme
+      # repo with its own workflow: see theme-template/deploy.yml and
+      # README → "Making a theme". The upload itself lives in tools/deploy.sh,
+      # which both use. Sign-in: README → "Deploy key".
       - name: Upload via SFTP
         env:
+          DEPLOY_HOST:     metacrystal.com
+          DEPLOY_DEST:     /home/${{ secrets.SFTP_USER }}/metacrystal.com/groveminder
+          DEPLOY_MODE:     demo
           SFTP_USER:       ${{ secrets.SFTP_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSHPASS:         ${{ secrets.SFTP_PASSWORD }}
-        run: |
-          set -euo pipefail
-          HOST=metacrystal.com
-          DEST="/home/${SFTP_USER}/metacrystal.com/groveminder"
-
-          # This deploy publishes the DEMO: site-config.demo.js goes up as
-          # site-config.js, and demo-firebase.js keeps everything in the visitor's
-          # browser. The PHP endpoints aren't needed by the demo, so they are
-          # removed from the server rather than left reachable.
-          cat > sftp-batch <<EOF
-          -mkdir $DEST
-          put site-config.demo.js  $DEST/site-config.js
-          put demo-firebase.js     $DEST/demo-firebase.js
-          put index.html           $DEST/index.html
-          put admin.html           $DEST/admin.html
-          put email-templates.json $DEST/email-templates.json
-          -rm $DEST/mailer.php
-          -rm $DEST/cal-push.php
-          -rm $DEST/ical-proxy.php
-          -rm $DEST/hp-lib.php
-          EOF
-
-          # The server's host keys are pinned in .github/known_hosts
-          SSH_OPTS=(-o UserKnownHostsFile=.github/known_hosts -o StrictHostKeyChecking=yes -o ConnectTimeout=20)
-
-          if [ -n "$SSH_PRIVATE_KEY" ]; then
-            mkdir -p ~/.ssh
-            install -m 600 /dev/null ~/.ssh/deploy_key
-            printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-            SSH_OPTS+=(-i ~/.ssh/deploy_key -o IdentitiesOnly=yes)
-
-            # Try the key on its own (no password) so the log shows whether it works
-            echo pwd > key-check
-            if sftp "${SSH_OPTS[@]}" -o BatchMode=yes -o PasswordAuthentication=no -b key-check "$SFTP_USER@$HOST" > /dev/null 2>&1; then
-              echo "Deploy key: accepted by the server"
-            elif [ -n "$SSHPASS" ]; then
-              echo "::warning::Deploy key was refused; falling back to SFTP_PASSWORD"
-            else
-              echo "::error::Deploy key was refused and no SFTP_PASSWORD fallback is set"
-              exit 1
-            fi
-          fi
-
-          if [ -n "$SSHPASS" ]; then
-            sudo apt-get install -y sshpass > /dev/null 2>&1
-            sshpass -e sftp "${SSH_OPTS[@]}" "$SFTP_USER@$HOST" < sftp-batch
-          else
-            sftp "${SSH_OPTS[@]}" -b sftp-batch "$SFTP_USER@$HOST"
-          fi
-
-          rm -f ~/.ssh/deploy_key
+        run: bash tools/deploy.sh
 
       - name: Confirm
         run: echo "✅ Deployed the demo to metacrystal.com/groveminder/"
