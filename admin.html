@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GroveMinder — Admin</title>
+    <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Site data, then product logic. Both run before the page renders, so the
+         site's own palette and name are in place from the first paint. -->
+    <script src="site-config.js"></script>
+    <script src="site-core.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            /* Theme variables — set by site-config.js applyTheme() and the
+            /* Theme variables — set by site-core.js applyTheme() and the
                admin's saved choice. Values here are the file-level fallback. */
             --primary:       #2D4A2B;
             --primary-light: #3F6240;
@@ -767,8 +771,8 @@
 <div id="screen-login">
     <div class="login-box">
         <div class="login-logo">
-            <span class="login-emoji" id="loginEmoji" aria-hidden="true">🌳</span>
-            <h1 id="loginTitle">GroveMinder</h1>
+            <span class="login-emoji" id="loginEmoji" aria-hidden="true"></span>
+            <h1 id="loginTitle"></h1>
             <p>Admin Panel</p>
         </div>
         <form id="loginForm">
@@ -789,10 +793,10 @@
 <!-- ── Admin Panel ────────────────────────────────────────────── -->
 <div id="screen-admin">
     <header class="admin-header">
-        <span class="admin-logo" id="adminLogo">🌳 GroveMinder Admin</span>
+        <span class="admin-logo" id="adminLogo"></span>
         <div class="admin-header-right">
             <span class="admin-user" id="adminUserEmail"></span>
-            <a href="/" class="view-site-link" target="_blank">View Site ↗</a>
+            <a href="./" class="view-site-link" target="_blank">View Site ↗</a>
             <button class="btn-primary" id="saveBtn">Save Changes</button>
             <button class="btn-ghost" id="logoutBtn">Log Out</button>
         </div>
@@ -811,9 +815,11 @@
 
             <!-- Settings Tab -->
             <div id="tab-settings" class="tab-panel active">
+                <div id="appearance-section">
                 <h2 class="section-heading">Appearance</h2>
                 <p style="color:var(--text-light);font-size:0.875rem;margin-bottom:1rem">Pick a colour palette for your public site. The change applies immediately for visitors after you save.</p>
                 <div id="theme-picker" class="theme-picker"></div>
+                </div>
 
                 <h2 class="section-heading">Contact</h2>
                 <div class="field-group">
@@ -1015,8 +1021,20 @@
 
 <div id="toast"></div>
 
-<!-- Site config -->
-<script src="site-config.js"></script>
+<script>
+// ── Brand (from site-config.js) ───────────────────────────────────
+// Runs before the Firebase scripts below are fetched, so the login screen
+// shows the site's name without waiting on the network.
+(function applyMeta() {
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = `${n} — Admin`;
+    document.getElementById('adminLogo').textContent  = `${e} ${n} Admin`;
+    document.getElementById('loginEmoji').textContent = e;
+    document.getElementById('loginTitle').textContent = n;
+    // A site with a fixed brand turns the picker off in site-config.js
+    if (SITE_CONFIG.themePicker === false) document.getElementById('appearance-section').hidden = true;
+})();
+</script>
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -1047,15 +1065,6 @@ const DEFAULTS = {
 let config = JSON.parse(JSON.stringify(DEFAULTS));
 
 // ── Auth ──────────────────────────────────────────────────────────
-function applyMeta() {
-    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
-    document.title = `${n} — Admin`;
-    document.getElementById('adminLogo').textContent  = `${e} ${n} Admin`;
-    document.getElementById('loginEmoji').textContent = e;
-    document.getElementById('loginTitle').textContent = n;
-}
-applyMeta();
-
 auth.onAuthStateChanged(user => {
     if (user) {
         document.getElementById('screen-login').style.display = 'none';
@@ -1121,7 +1130,7 @@ async function saveConfig() {
 document.getElementById('saveBtn').addEventListener('click', saveConfig);
 
 function populateUI() {
-    if (config.theme && typeof applyTheme === 'function') applyTheme(config.theme);
+    applyTheme(siteTheme(config.theme));
     document.getElementById('cfg-email').value        = config.email        || '';
     document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
     document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
@@ -1172,7 +1181,7 @@ function renderThemePicker() {
 
 function selectTheme(key) {
     config.theme = key;
-    if (typeof applyTheme === 'function') applyTheme(key);
+    applyTheme(key);
     document.querySelectorAll('#theme-picker .theme-card').forEach(c => {
         c.classList.toggle('selected', c.dataset.theme === key);
     });
@@ -1309,7 +1318,7 @@ function renderServicesList() {
                             Show rate publicly
                         </label>
                     </div>
-                    <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. +$10 for 2+ kids)"
+                    <textarea class="rate-notes" rows="2" placeholder="Rate notes (e.g. ${escHtml(siteCopy('rateNotesExample'))})"
                         style="border:1px solid #ddd;border-radius:4px;padding:0.5rem 0.75rem;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg);width:100%;resize:vertical">${escHtml(r.notes)}</textarea>
                 </div>
             </div>
@@ -1529,7 +1538,7 @@ function renderApprovedList() {
             </div>
             <input class="ta-name" type="text" value="${escHtml(t.name)}" placeholder="Name"
                 style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-weight:700;background:var(--bg)">
-            <input class="ta-role" type="text" value="${escHtml(t.role)}" placeholder="How they know you (e.g. Nanny Client · 2 years)"
+            <input class="ta-role" type="text" value="${escHtml(t.role)}" placeholder="How they know you (e.g. ${escHtml(siteCopy('roleExample'))})"
                 style="width:100%;margin-bottom:0.5rem;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.85rem;background:var(--bg)">
             <textarea class="ta-quote" rows="3" placeholder="Their testimonial"
                 style="width:100%;padding:0.5rem 0.75rem;border:1px solid #ddd;border-radius:4px;font-family:Lato,sans-serif;font-size:0.875rem;background:var(--bg);resize:vertical">${escHtml(t.quote)}</textarea>

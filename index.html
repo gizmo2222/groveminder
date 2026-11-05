@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GroveMinder</title>
+    <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://www.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Site data, then product logic. Both run before the page renders, so the
+         site's own palette and name are in place from the first paint. -->
+    <script src="site-config.js"></script>
+    <script src="site-core.js"></script>
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            /* Theme variables — set by site-config.js applyTheme() and the
+            /* Theme variables — set by site-core.js applyTheme() and the
                admin's saved choice. Values here are the file-level fallback. */
             --primary:       #2D4A2B;
             --primary-light: #3F6240;
@@ -130,6 +134,17 @@
             animation: float 4s ease-in-out infinite;
             will-change: transform;
             user-select: none;
+        }
+
+        /* Used instead of .hero-emoji when site-config.js sets heroImage */
+        .hero-image {
+            width: clamp(80px, 12vw, 140px);
+            height: auto;
+            display: block;
+            margin: 0 auto 1.25rem;
+            filter: drop-shadow(0 4px 20px color-mix(in srgb, var(--accent) 50%, transparent));
+            animation: float 4s ease-in-out infinite;
+            will-change: transform;
         }
 
         @keyframes float {
@@ -827,12 +842,12 @@
 <!-- ── Navigation ──────────────────────────────────────────── -->
 <nav>
     <div class="nav-inner">
-        <a href="#hero" class="nav-logo" id="navLogo">🌳 GroveMinder</a>
+        <a href="#hero" class="nav-logo" id="navLogo"></a>
         <ul class="nav-links" id="navLinks">
             <li><a href="#services">Services</a></li>
-            <li><a href="#book">Book</a></li>
+            <li><a href="#book" id="navBook">Book</a></li>
             <li><a href="#testimonials">Testimonials</a></li>
-            <li><a href="#qa">Ask</a></li>
+            <li><a href="#qa" id="navAsk">Ask</a></li>
             <li><a href="#rates">Rates</a></li>
             <li><a href="#pay">Pay</a></li>
         </ul>
@@ -845,10 +860,10 @@
 <!-- ── Hero ────────────────────────────────────────────────── -->
 <section id="hero">
     <div class="hero-content">
-        <span class="hero-emoji" id="heroEmoji" aria-hidden="true">🌳</span>
-        <h1 class="hero-title" id="heroTitle">GroveMinder</h1>
-        <p class="hero-tagline" id="heroTagline">"Perfectly Imperfect and That's OK"</p>
-        <p class="hero-desc" id="heroDesc">Trusted, caring, and dependable — available for nannying, pet sitting, and more. Let's find a time that works perfectly for your family.</p>
+        <span class="hero-emoji" id="heroEmoji" aria-hidden="true"></span>
+        <h1 class="hero-title" id="heroTitle"></h1>
+        <p class="hero-tagline" id="heroTagline"></p>
+        <p class="hero-desc" id="heroDesc"></p>
         <div class="hero-ctas">
             <a href="#book" class="btn-primary">Check Availability</a>
             <a href="#testimonials" class="btn-outline">See Testimonials</a>
@@ -913,10 +928,6 @@
                                 <label for="b-service">Service *</label>
                                 <select id="b-service" name="service" required>
                                     <option value="">Select...</option>
-                                    <option>Nanny / Childcare</option>
-                                    <option>Pet Sitting</option>
-                                    <option>Activities &amp; Enrichment</option>
-                                    <option>Household Support</option>
                                     <option>Other</option>
                                 </select>
                             </div>
@@ -933,7 +944,7 @@
                         </div>
                         <div class="form-group">
                             <label for="b-notes">Notes</label>
-                            <textarea id="b-notes" maxlength="2000" name="notes" placeholder="Ages of children, special needs, expected duration, etc."></textarea>
+                            <textarea id="b-notes" maxlength="2000" name="notes"></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width:100%">Send Booking Request</button>
                         <p class="form-note">I'll review your request and get back to you within 24 hours. No commitment until you hear from me.</p>
@@ -968,7 +979,7 @@
                     </div>
                     <div class="form-group">
                         <label for="r-role">How You Know Me</label>
-                        <input type="text" id="r-role" maxlength="100" placeholder="e.g. Nanny Client · 2 years">
+                        <input type="text" id="r-role" maxlength="100">
                     </div>
                 </div>
                 <div class="form-group">
@@ -1039,7 +1050,7 @@
             <div class="rates-text">
                 <h2 class="section-title">Rates</h2>
                 <div class="divider"></div>
-                <p>Rates vary depending on the service, the number of children, hours, and any special requirements. I prefer to discuss pricing personally so I can give you an accurate, fair quote tailored to your situation.</p>
+                <p id="ratesIntro"></p>
                 <p>Fill out the form and I'll get back to you promptly with a detailed breakdown — no pressure, no commitment.</p>
             </div>
             <div>
@@ -1061,16 +1072,12 @@
                             <label for="ra-service">Service Type *</label>
                             <select id="ra-service" name="service" required>
                                 <option value="">Select...</option>
-                                <option>Nanny / Childcare</option>
-                                <option>Pet Sitting</option>
-                                <option>Activities &amp; Enrichment</option>
-                                <option>Household Support</option>
                                 <option>Other</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="ra-details">Details</label>
-                            <textarea id="ra-details" maxlength="2000" name="details" placeholder="Number of children, typical hours per week, any special considerations..."></textarea>
+                            <textarea id="ra-details" maxlength="2000" name="details"></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width:100%">Request Rate Info</button>
                         <div class="success-msg" id="ratesSuccess">✓ Got it! I'll send rate details to your email shortly.</div>
@@ -1103,11 +1110,44 @@
 
 <!-- ── Footer ─────────────────────────────────────────────────── -->
 <footer>
-    <p><span id="footerSiteName">🌳 GroveMinder</span> <span id="footerEmailWrap" hidden> &nbsp;·&nbsp; <a id="footerEmail"></a></span></p>
-    <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.6">© <span id="footerYear">2026</span> <span id="footerCopyright">GroveMinder</span>. All rights reserved.</p>
+    <p><span id="footerSiteName"></span> <span id="footerEmailWrap" hidden> &nbsp;·&nbsp; <a id="footerEmail"></a></span></p>
+    <p style="margin-top:0.4rem;font-size:0.75rem;opacity:0.6">© <span id="footerYear"></span> <span id="footerCopyright"></span>. All rights reserved.</p>
 </footer>
 
-<script src="site-config.js"></script>
+<script>
+// ── Brand and copy (from site-config.js) ───────────────────────
+// Runs before the Firebase scripts below are fetched, so the name, hero and
+// labels are filled in without waiting on the network.
+(function applyMeta() {
+    const $ = id => document.getElementById(id);
+    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
+    document.title = n;
+    $('navLogo').textContent = `${e} ${n}`;
+    $('navBook').textContent = siteCopy('navBook');
+    $('navAsk').textContent  = siteCopy('navAsk');
+    if (SITE_CONFIG.heroImage) {
+        const img = document.createElement('img');
+        img.className = 'hero-image';
+        img.src = SITE_CONFIG.heroImage;
+        img.alt = '';
+        $('heroEmoji').replaceWith(img);
+    } else {
+        $('heroEmoji').textContent = e;
+    }
+    const [first, ...rest] = n.split(' ');
+    $('heroTitle').innerHTML = rest.length
+        ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
+    $('heroTagline').textContent = SITE_CONFIG.tagline ? `"${SITE_CONFIG.tagline}"` : '';
+    $('heroDesc').textContent    = SITE_CONFIG.heroDesc;
+    $('b-notes').placeholder     = siteCopy('notesPlaceholder');
+    $('r-role').placeholder      = `e.g. ${siteCopy('roleExample')}`;
+    $('ratesIntro').textContent  = siteCopy('ratesIntro');
+    $('ra-details').placeholder  = siteCopy('rateDetailsPlaceholder');
+    $('footerSiteName').textContent  = `${e} ${n}`;
+    $('footerCopyright').textContent = n;
+    $('footerYear').textContent      = new Date().getFullYear();
+})();
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <!-- Only active when site-config.js sets demo: true (see README → Demo) -->
@@ -1142,8 +1182,9 @@ async function loadConfig() {
 
 function applyConfig(cfg) {
 
-    // Theme — admin's saved choice overrides the file-level default
-    if (cfg.theme && typeof applyTheme === 'function') applyTheme(cfg.theme, cfg.colors || {});
+    // Theme — admin's saved choice overrides the file-level default; the
+    // `colors` overrides in site-config.js stay on top either way
+    applyTheme(siteTheme(cfg.theme));
 
     // Email
     if (cfg.email) {
@@ -1201,7 +1242,7 @@ function applyConfig(cfg) {
             <p class="testimonial-author">${esc(t.name)}</p>
             <p class="testimonial-role">${esc(t.role)}</p>
         </div>`).join('')
-        : '<p class="testimonials-empty">Kind words from the people I work with will be shared here soon.</p>';
+        : `<p class="testimonials-empty">${esc(siteCopy('testimonialsEmpty'))}</p>`;
 
     // FAQ
     document.getElementById('faqList').innerHTML = (cfg.faq || DEFAULTS.faq).map(item => `
@@ -1468,24 +1509,7 @@ document.querySelectorAll('form').forEach(form => {
     });
 });
 
-// ── Meta (from site-config.js) ─────────────────────────────────
-function applyMeta() {
-    const e = SITE_CONFIG.navEmoji, n = SITE_CONFIG.siteName;
-    document.title = n;
-    document.getElementById('navLogo').textContent     = `${e} ${n}`;
-    document.getElementById('heroEmoji').textContent   = e;
-    const [first, ...rest] = n.split(' ');
-    document.getElementById('heroTitle').innerHTML = rest.length
-        ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
-    document.getElementById('heroTagline').textContent = SITE_CONFIG.tagline ? `"${SITE_CONFIG.tagline}"` : '';
-    document.getElementById('heroDesc').textContent    = SITE_CONFIG.heroDesc;
-    document.getElementById('footerSiteName').textContent = `${e} ${n}`;
-    document.getElementById('footerCopyright').textContent = n;
-    document.getElementById('footerYear').textContent      = new Date().getFullYear();
-}
-
 // ── Init ───────────────────────────────────────────────────────
-applyMeta();
 loadConfig();
 </script>
 </body>
