@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy. The sha256 values hash the page's inline script
+         blocks: after editing one, run tools/csp-hashes.mjs (README → Tests → CSP). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-HSiik1YpCkJwt+pyxQ70aTs8nRzMJyV8PqCgnjIoEPU=' 'sha256-rkigaYB8uk4/0L35aCF5GfIq0dzU4r2BdLz3RUvk2eQ=' https://www.gstatic.com https://www.google.com/recaptcha/; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://www.google.com/recaptcha/; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; object-src 'none'; base-uri 'self'; form-action 'self'">
     <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1151,13 +1154,18 @@
     $('footerYear').textContent      = new Date().getFullYear();
 })();
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs. A new version needs new integrity hashes (README → Tests → CSP),
+     and the same version in startAppCheck() in site-core.js. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"
+        integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"
+        integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
 <!-- Only active when site-config.js sets demo: true (see README → Demo) -->
 <script src="demo-firebase.js"></script>
 <script>
 // ── Firebase ───────────────────────────────────────────────────
 firebase.initializeApp(SITE_CONFIG.firebase);
+const appCheckReady = startAppCheck();   // optional, see site-config.js
 const db = firebase.firestore();
 
 // ── Defaults ───────────────────────────────────────────────────
@@ -1513,7 +1521,7 @@ document.querySelectorAll('form').forEach(form => {
 });
 
 // ── Init ───────────────────────────────────────────────────────
-loadConfig();
+appCheckReady.then(loadConfig);
 </script>
 </body>
 </html>

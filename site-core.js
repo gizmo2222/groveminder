@@ -102,6 +102,46 @@ document.title = SITE_CONFIG.siteName || '';
     document.head.appendChild(link);
 })();
 
+// ── Firebase App Check (optional) ─────────────────────────────────────────
+// When site-config.js sets appCheckSiteKey (a reCAPTCHA v3 site key), load the
+// App Check SDK and activate it. Call right after firebase.initializeApp(), and
+// wait for the promise before the first Firestore request. Resolves either way,
+// so a blocked script leaves the site working where App Check isn't enforced.
+// The PHP endpoints read Firestore on the page's behalf, so same-origin .php
+// requests carry the page's App Check token (hp_fs_get() passes it on).
+// Keep the version and hash in step with the Firebase <script> tags.
+function startAppCheck() {
+    const key = SITE_CONFIG.appCheckSiteKey;
+    if (!key || SITE_CONFIG.demo) return Promise.resolve();
+    return new Promise(resolve => {
+        const s = document.createElement('script');
+        s.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js';
+        s.integrity = 'sha384-E3vxFxXu8FhW5kvqdQJ5Yf8ugrV7iCJP8jgnItRH2Rk8Q08cJzJGTi/oMC3FEp3j';
+        s.crossOrigin = 'anonymous';
+        s.onload = () => {
+            try {
+                const appCheck = firebase.appCheck();
+                appCheck.activate(key, true);
+                const send = window.fetch.bind(window);
+                window.fetch = async (input, init = {}) => {
+                    const url = new URL(input instanceof Request ? input.url : input, location.href);
+                    if (url.origin === location.origin && url.pathname.endsWith('.php')) {
+                        try {
+                            const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
+                            headers.set('X-Firebase-AppCheck', (await appCheck.getToken()).token);
+                            init = { ...init, headers };
+                        } catch (e) { /* send without it; fine until App Check is enforced */ }
+                    }
+                    return send(input, init);
+                };
+            } catch (e) { console.warn('App Check did not start:', e); }
+            resolve();
+        };
+        s.onerror = () => { console.warn('App Check script failed to load.'); resolve(); };
+        document.head.appendChild(s);
+    });
+}
+
 // ── Copy ───────────────────────────────────────────────────────────────────
 // Wording a site may want to change. site-config.js overrides any of these in
 // its optional `copy` block; whatever it leaves out falls back to the text here.

@@ -19,6 +19,11 @@ const SITE_CONFIG = {
         appId:             "1:000000000000:web:0000000000000000000000"
     },
 
+    // Optional Firebase App Check (README → "Upgrading a live site", v1.2.0).
+    // Paste a reCAPTCHA v3 site key to have every Firestore request prove it
+    // comes from this site. Empty = App Check off. Ignored in demo mode.
+    appCheckSiteKey: "",
+
     // ── Demo mode ─────────────────────────────────────────────────────────────
     demo: true,
 
