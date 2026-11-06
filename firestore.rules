@@ -29,10 +29,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // ── Public site settings ──
+    // ── Public site settings ── anyone can read these, so no secrets here.
+    // The iCal address shows the operator's whole calendar: it lives in
+    // private/calendar, and is refused here so an old admin page can't put it back.
     match /config/{doc} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && !('icalUrl' in request.resource.data);
+      allow delete: if isAdmin();
     }
 
     // ── Calendar credentials and other admin-only data ──

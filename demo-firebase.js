@@ -40,7 +40,6 @@
             cashappHandle: '',
             zelleHandle: 'hello@example.com',
             availableDates: available,
-            icalUrl: '',
             theme: SITE_CONFIG.theme || 'grove',
             services: SITE_CONFIG.defaultServices,
             faq: SITE_CONFIG.defaultFaq,

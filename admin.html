@@ -1055,7 +1055,6 @@ const DEFAULTS = {
     cashappHandle: '',
     zelleHandle: '',
     availableDates: [],
-    icalUrl: '',
     theme:        SITE_CONFIG.theme || 'grove',
     testimonials: SITE_CONFIG.defaultTestimonials,
     faq:          SITE_CONFIG.defaultFaq,
@@ -1070,8 +1069,8 @@ auth.onAuthStateChanged(user => {
         document.getElementById('screen-login').style.display = 'none';
         document.getElementById('screen-admin').classList.add('visible');
         document.getElementById('adminUserEmail').textContent = user.email;
-        loadConfig();
-        loadCalConfig();
+        // Settings first: an older version kept the iCal address there.
+        loadConfig().then(loadCalConfig);
     } else {
         document.getElementById('screen-login').style.display = 'flex';
         document.getElementById('screen-admin').classList.remove('visible');
@@ -1105,6 +1104,10 @@ async function loadConfig() {
     try {
         const doc = await db.collection('config').doc('settings').get();
         if (doc.exists) config = { ...DEFAULTS, ...doc.data() };
+        // Older versions saved the secret iCal address in these public settings.
+        // Carry it over to private/calendar; the next save removes it from here.
+        if (config.icalUrl) legacyIcalUrl = config.icalUrl;
+        delete config.icalUrl;
     } catch {
         showToast("Couldn't load your settings — showing defaults.", 'error');
     }
@@ -1117,8 +1120,10 @@ async function saveConfig() {
     btn.textContent = 'Saving…';
     harvestUI();
     try {
-        await db.collection('config').doc('settings').set(config);
+        // Private first: if it fails, the public save that drops a legacy
+        // iCal address never runs, so the address is not lost.
         await saveCalConfig();
+        await db.collection('config').doc('settings').set(config);
         showToast('✓ Saved — changes are live immediately.', 'success');
     } catch {
         showToast('Save failed. Check your connection.', 'error');
@@ -1135,7 +1140,6 @@ function populateUI() {
     document.getElementById('cfg-venmo').value        = config.venmoHandle  || '';
     document.getElementById('cfg-cashapp').value      = config.cashappHandle || '';
     document.getElementById('cfg-zelle').value        = config.zelleHandle  || '';
-    document.getElementById('cfg-ical').value         = config.icalUrl      || '';
     renderThemePicker();
     renderAdminCalendar();
     renderServicesList();
@@ -1149,7 +1153,6 @@ function harvestUI() {
     config.venmoHandle   = document.getElementById('cfg-venmo').value.trim();
     config.cashappHandle = document.getElementById('cfg-cashapp').value.trim();
     config.zelleHandle   = document.getElementById('cfg-zelle').value.trim();
-    config.icalUrl       = document.getElementById('cfg-ical').value.trim();
     config.services      = readServicesFromUI();
     config.testimonials  = readApprovedFromUI();
     config.faq           = readFaqFromUI();
@@ -1610,15 +1613,18 @@ document.getElementById('addFaqBtn').addEventListener('click', () => {
 // ── Calendar Integration Config (private/calendar) ───────────────
 const CAL_DEFAULTS = {
     method: 'none', email: '', googleJson: '', googleCalId: 'primary',
-    caldavUrl: 'https://caldav.icloud.com/', caldavUser: '', caldavPass: '', caldavCal: ''
+    caldavUrl: 'https://caldav.icloud.com/', caldavUser: '', caldavPass: '', caldavCal: '',
+    icalUrl: ''   // secret address: it shows the whole calendar, so never in public settings
 };
 let calConfig = { ...CAL_DEFAULTS };
+let legacyIcalUrl = '';
 
 async function loadCalConfig() {
     try {
         const doc = await db.collection('private').doc('calendar').get();
         if (doc.exists) calConfig = { ...CAL_DEFAULTS, ...doc.data() };
     } catch { /* private collection may not exist yet */ }
+    if (!calConfig.icalUrl && legacyIcalUrl) calConfig.icalUrl = legacyIcalUrl;
     populateCalUI();
 }
 
@@ -1631,6 +1637,7 @@ function populateCalUI() {
     document.getElementById('cal-caldav-user').value = calConfig.caldavUser  || '';
     document.getElementById('cal-caldav-pass').value = calConfig.caldavPass  || '';
     document.getElementById('cal-caldav-cal').value  = calConfig.caldavCal   || '';
+    document.getElementById('cfg-ical').value        = calConfig.icalUrl     || '';
     updateCalFields();
 }
 
@@ -1643,13 +1650,12 @@ function harvestCalUI() {
     calConfig.caldavUser  = document.getElementById('cal-caldav-user').value.trim();
     calConfig.caldavPass  = document.getElementById('cal-caldav-pass').value.trim();
     calConfig.caldavCal   = document.getElementById('cal-caldav-cal').value.trim();
+    calConfig.icalUrl     = document.getElementById('cfg-ical').value.trim();
 }
 
 async function saveCalConfig() {
     harvestCalUI();
-    try {
-        await db.collection('private').doc('calendar').set(calConfig);
-    } catch { /* fails gracefully if Firestore rules not yet updated */ }
+    await db.collection('private').doc('calendar').set(calConfig);
 }
 
 function updateCalFields() {
