@@ -9,8 +9,8 @@ Method: a code read, plus local tests only. No live site, no live Firebase proje
 
 - Rules: `tests/rules.test.js` runs against the Firestore emulator with a pass and a fail case for each rule (36 tests).
 - PHP: `tests/php/run.sh` runs the endpoints under `php -S`, with Firestore pointed at a closed local port and
-  mail going to a local SMTP sink (25 checks).
-- Admin: the iCal migration was checked by hand in demo mode in a local browser.
+  mail going to a local SMTP sink (88 checks).
+- Admin: the iCal migration, and both pages under the new CSP, were checked by hand in demo mode in a local browser.
 
 How to run the tests is in the README, under "Tests".
 
@@ -20,8 +20,8 @@ How to run the tests is in the README, under "Tests".
 |---|---|---|
 | Critical | 0 | — |
 | High | 1 | 1 |
-| Medium | 4 | 0 (your call) |
-| Low | 12 | 0 (your call) |
+| Medium | 4 | 4 (M3 also needs App Check turned on per site) |
+| Low | 12 | 11 (L11 is a live setting) |
 
 What held up well:
 - Visitor text is escaped wherever it's rendered (`esc()` in `index.html`, `escHtml()` in `admin.html`). No XSS from visitor input was found.
