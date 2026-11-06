@@ -1,0 +1,13 @@
+{
+  "name": "groveminder-tests",
+  "private": true,
+  "description": "Dev-only tests for GroveMinder. Not part of the deployed site.",
+  "type": "module",
+  "scripts": {
+    "test:rules": "firebase emulators:exec --config ../firebase.json --only firestore --project demo-groveminder \"node --test rules.test.js\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.2.0"
+  }
+}

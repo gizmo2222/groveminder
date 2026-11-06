@@ -1,2 +1,5 @@
 # Firebase CLI debug output
 firebase-debug*.log
+
+# Dev-only test tools
+tests/node_modules/
