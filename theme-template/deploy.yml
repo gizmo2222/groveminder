@@ -14,18 +14,22 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout this theme
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
           path: theme
 
-      # To take a newer GroveMinder, change `ref` to its tag and push.
+      # To take a newer GroveMinder, set `ref` to the commit SHA of its release tag
+      # (in groveminder: git rev-parse v1.1.0^{commit}) and push. A tag can be moved; a SHA cannot.
       - name: Checkout GroveMinder at the pinned version
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
         with:
           repository: gizmo2222/groveminder
           ref: v1.0.0                      # CHANGE when you upgrade

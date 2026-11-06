@@ -250,10 +250,18 @@ v1.1.0 moves the iCal address out of the public settings. Before it, anyone coul
    git push origin master v1.1.0
    ```
 
-2. In each theme repo (for example `F:\dev\holly-poppins`), pin the new tag and push to deploy:
+2. In each theme repo (for example `F:\dev\holly-poppins`), pin the new release by its commit SHA (a tag can be moved, a SHA can't), pin the checkout action the same way, give the job read-only access, and push to deploy. First, still in this repo:
 
    ```powershell
-   $f = "$PWD\.github\workflows\deploy.yml"; [System.IO.File]::WriteAllText($f, ((Get-Content $f -Raw -Encoding UTF8) -replace 'ref: v1\.0\.0', 'ref: v1.1.0'))
+   $sha = git rev-parse "v1.1.0^{commit}"
+   ```
+
+   ```powershell
+   Set-Location F:\dev\holly-poppins
+   ```
+
+   ```powershell
+   $f = "$PWD\.github\workflows\deploy.yml"; $t = Get-Content $f -Raw -Encoding UTF8; $t = $t -replace 'ref: v1\.0\.0', "ref: $sha" -replace 'actions/checkout@v5', 'actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5'; if ($t -notmatch '(?m)^permissions:') { $t = $t -replace '(?m)^jobs:', "permissions:`n  contents: read`n`njobs:" }; [System.IO.File]::WriteAllText($f, $t)
    ```
 
    ```powershell

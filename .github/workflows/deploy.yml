@@ -5,12 +5,15 @@ on:
     branches: [master]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09  # v5
 
       # This repo publishes the DEMO (DEPLOY_MODE: demo). A real site is a theme
       # repo with its own workflow: see theme-template/deploy.yml and
