@@ -18,6 +18,7 @@ function hp_site_config() {
     return $cfg = [
         'projectId' => $get('projectId'),
         'siteName'  => $get('siteName'),
+        'mailDomain' => $get('mailDomain'),
     ];
 }
 
@@ -53,11 +54,15 @@ function hp_multi_line($s, $max = 2000) {
     return mb_substr(trim($s), 0, $max);
 }
 
-// The mail domain comes from the server's own name, never the client's Host header
+// The mail domain comes from mailDomain in site-config.js. SERVER_NAME is only a
+// fallback: with Apache's default UseCanonicalName Off it is the client's Host header.
 function hp_mail_from() {
-    $host = preg_replace('/[^a-z0-9.-]/i', '', $_SERVER['SERVER_NAME'] ?? '');
-    $host = preg_replace('/^www\./i', '', $host) ?: 'localhost';
-    return 'noreply@' . $host;
+    $host = hp_site_config()['mailDomain'];
+    if (!preg_match('/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i', $host)) {
+        $host = preg_replace('/[^a-z0-9.-]/i', '', $_SERVER['SERVER_NAME'] ?? '');
+        $host = preg_replace('/^www\./i', '', $host) ?: 'localhost';
+    }
+    return 'noreply@' . strtolower($host);
 }
 
 // ── HTTP ──────────────────────────────────────────────────────────────────────
@@ -136,24 +141,43 @@ function hp_require_admin() {
 }
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
+// The rate-limit files live in a private folder: groveminder-data next to the
+// site's folder (outside the web root) when it can be created and written, or
+// else a data/ folder inside the site that an .htaccess locks against downloads.
+function hp_data_dir() {
+    static $dir = null;
+    if ($dir !== null) return $dir;
+    $try = function ($path, $lock) {
+        if (!is_dir($path)) @mkdir($path, 0700, true);
+        if (!is_dir($path) || !is_writable($path)) return false;
+        if ($lock && !is_file($path . '/.htaccess')) @file_put_contents($path . '/.htaccess', "Require all denied\n");
+        return !$lock || is_file($path . '/.htaccess');
+    };
+    foreach ([[dirname(__DIR__) . '/groveminder-data', false], [__DIR__ . '/data', true]] as [$path, $lock]) {
+        if ($try($path, $lock)) return $dir = $path;
+    }
+    return $dir = '';
+}
+
 // Sliding window kept in a small file per bucket. $perIp = false makes one
-// shared bucket for everyone (a ceiling on total volume).
-function hp_rate_limit($bucket, $max, $windowSec, $perIp = true) {
-    $who  = $perIp ? ($_SERVER['REMOTE_ADDR'] ?? 'unknown') : '*';
-    $file = sys_get_temp_dir() . '/hp-rl-' . md5(__DIR__ . '|' . $bucket . '|' . $who);
-    $fp   = @fopen($file, 'c+');
-    if (!$fp) return true;   // fail open rather than break the site
-    flock($fp, LOCK_EX);
+// shared bucket for everyone (a ceiling on total volume); $key picks another
+// shared bucket, such as one per recipient. A per-IP bucket fails open if its
+// file can't be used (rather than break the site). A shared bucket fails closed.
+function hp_rate_limit($bucket, $max, $windowSec, $perIp = true, $key = null) {
+    $who  = $key !== null ? (string)$key : ($perIp ? ($_SERVER['REMOTE_ADDR'] ?? 'unknown') : '*');
+    $fail = $perIp && $key === null;
+    $dir  = hp_data_dir();
+    $fp   = $dir === '' ? false : @fopen($dir . '/rl-' . md5(__DIR__ . '|' . $bucket . '|' . $who), 'c+');
+    if (!$fp) return $fail;
+    if (!flock($fp, LOCK_EX)) { fclose($fp); return $fail; }
     $now  = time();
     $hits = array_filter(json_decode(stream_get_contents($fp), true) ?: [], function ($t) use ($now, $windowSec) {
         return $t > $now - $windowSec;
     });
     $allowed = count($hits) < $max;
     if ($allowed) $hits[] = $now;
-    ftruncate($fp, 0);
-    rewind($fp);
-    fwrite($fp, json_encode(array_values($hits)));
+    $saved = ftruncate($fp, 0) && rewind($fp) && fwrite($fp, json_encode(array_values($hits))) !== false;
     flock($fp, LOCK_UN);
     fclose($fp);
-    return $allowed;
+    return $saved ? $allowed : $fail;
 }
