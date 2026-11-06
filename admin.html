@@ -1111,19 +1111,48 @@ async function loadConfig() {
     } catch {
         showToast("Couldn't load your settings — showing defaults.", 'error');
     }
+    // Every rate lives in private/rates, keyed by service id; the public settings
+    // hold only the rates marked public. Older versions kept hidden rates there
+    // too: those stay as loaded, and the next save moves them.
+    try {
+        const priv = await db.collection('private').doc('rates').get();
+        const saved = (priv.exists && priv.data().services) || {};
+        config.services = (config.services || []).map(s => saved[s.id] ? { ...s, rate: saved[s.id] } : s);
+        ratesLoaded = true;
+    } catch {
+        showToast("Couldn't load your private rates. Reload before saving.", 'error');
+    }
     populateUI();
 }
 
+let ratesLoaded = false;
+
+// The copy of a service that goes in the public settings
+function publicService(s) {
+    if (!s.rate || s.rate.public) return s;
+    const { rate, ...rest } = s;
+    return rest;
+}
+
 async function saveConfig() {
+    // Saving without the private rates would wipe them
+    if (!ratesLoaded) {
+        showToast("Your private rates didn't load. Reload the page, then save.", 'error');
+        return;
+    }
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;
     btn.textContent = 'Saving…';
     harvestUI();
+    config.services.forEach((s, i) => { if (!s.id) s.id = `svc_${Date.now()}_${i}`; });
+    const rates = {};
+    config.services.forEach(s => { if (s.rate) rates[s.id] = s.rate; });
     try {
         // Private first: if it fails, the public save that drops a legacy
-        // iCal address never runs, so the address is not lost.
+        // iCal address or hidden rate never runs, so nothing is lost.
         await saveCalConfig();
-        await db.collection('config').doc('settings').set(config);
+        await db.collection('private').doc('rates').set({ services: rates });
+        await db.collection('config').doc('settings').set({ ...config, services: config.services.map(publicService) });
         showToast('✓ Saved — changes are live immediately.', 'success');
     } catch {
         showToast('Save failed. Check your connection.', 'error');

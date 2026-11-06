@@ -63,7 +63,9 @@ const SITE_CONFIG = {
     },
 
     // ── Default content ───────────────────────────────────────────────────────
-    // Shown before the admin has saved anything to Firestore.
+    // Shown before the admin has saved anything to Firestore. This file is
+    // public, so leave rates you keep private empty here: enter them in the
+    // admin panel, which stores them where only you can read them.
 
     defaultServices: [
         { id: 'service1', icon: '✨', name: 'Service One',   desc: 'Describe what you offer here. One or two sentences is plenty — focus on the outcome for the client.', active: true, rate: { base: '', min: '', notes: '', public: false } },
