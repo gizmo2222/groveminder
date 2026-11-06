@@ -1064,7 +1064,27 @@ const DEFAULTS = {
 let config = JSON.parse(JSON.stringify(DEFAULTS));
 
 // ── Auth ──────────────────────────────────────────────────────────
-auth.onAuthStateChanged(user => {
+// Being signed in isn't enough: only users listed in admins/{uid} get the panel.
+async function isAdminUser(user) {
+    try { return (await db.collection('admins').doc(user.uid).get()).exists; }
+    catch { return false; }
+}
+
+function showLoginError(text) {
+    const err = document.getElementById('loginError');
+    err.textContent = text;
+    err.style.display = 'block';
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+}
+
+auth.onAuthStateChanged(async user => {
+    if (user && !(await isAdminUser(user))) {
+        try { await auth.signOut(); } catch { /* the login screen shows either way */ }
+        showLoginError("This account isn't an admin.");
+        user = null;
+    }
     if (user) {
         document.getElementById('screen-login').style.display = 'none';
         document.getElementById('screen-admin').classList.add('visible');
@@ -1090,10 +1110,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
             document.getElementById('login-password').value
         );
     } catch {
-        err.textContent = 'Incorrect email or password.';
-        err.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
+        showLoginError('Incorrect email or password.');
     }
 });
 
