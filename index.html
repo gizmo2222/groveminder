@@ -1134,9 +1134,12 @@
     } else {
         $('heroEmoji').textContent = e;
     }
+    // <span>First</span> rest — built from text nodes, so the name is never parsed as HTML
     const [first, ...rest] = n.split(' ');
-    $('heroTitle').innerHTML = rest.length
-        ? `<span>${first}</span> ${rest.join(' ')}` : `<span>${first}</span>`;
+    const lead = document.createElement('span');
+    lead.textContent = first;
+    $('heroTitle').replaceChildren(lead);
+    if (rest.length) $('heroTitle').append(' ' + rest.join(' '));
     $('heroTagline').textContent = SITE_CONFIG.tagline ? `"${SITE_CONFIG.tagline}"` : '';
     $('heroDesc').textContent    = SITE_CONFIG.heroDesc;
     $('b-notes').placeholder     = siteCopy('notesPlaceholder');

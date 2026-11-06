@@ -1468,7 +1468,10 @@ async function syncCalendar() {
     btn.textContent = 'Sync from Calendar';
 }
 
+const MAX_EVENT_DAYS = 366;
+
 function parseIcal(text) {
+    const today = new Date().toISOString().slice(0, 10);
     text = text.replace(/\r\n[ \t]/g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const dates = new Set();
     text.split(/BEGIN:VEVENT/).slice(1).forEach(block => {
@@ -1480,8 +1483,13 @@ function parseIcal(text) {
         if (e) {
             const end = isoDate(e[1].trim());
             if (end && end > start) {
-                let cur = new Date(start + 'T12:00:00');
-                const fin = new Date(end   + 'T12:00:00');
+                // A bad feed can put DTEND centuries after DTSTART. Cap the span,
+                // and start at today: the sync shows only upcoming dates.
+                let cur = new Date((start < today ? today : start) + 'T12:00:00');
+                let fin = new Date(end + 'T12:00:00');
+                const cap = new Date(start + 'T12:00:00');
+                cap.setDate(cap.getDate() + MAX_EVENT_DAYS);
+                if (fin > cap) fin = cap;
                 while (cur < fin) { dates.add(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
                 return;
             }
