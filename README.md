@@ -55,9 +55,9 @@ Copy the contents of [`firestore.rules`](firestore.rules) into Firestore → Rul
 
 The rules:
 
-- let anyone read the public `config` settings
+- let anyone read the public `config` settings, so nothing secret goes there; they refuse an `icalUrl` in `config`
 - let visitors **create** bookings and testimonials, but only well-formed ones with sensible lengths, a valid email and status `pending` / `approved: false`
-- keep `bookings`, `testimonials`, `private` (calendar credentials) and config writes admin-only
+- keep `bookings`, `testimonials`, `private` (the iCal address and calendar credentials) and config writes admin-only
 
 ### 4. Making a theme
 
@@ -218,9 +218,74 @@ GitHub Actions checks out the theme and GroveMinder at the pinned version, then 
 
 - **Email can't be used as a relay.** The page only tells `mailer.php` which form was sent and what the visitor typed. The server picks the recipients: notifications go only to the contact email in Settings, and confirmations only to the visitor's own address, using the saved templates. Confirm/decline emails need a signed-in admin.
 - **Rate limits.** Each visitor IP can trigger 5 form emails an hour, with a ceiling of 100 a day for the whole site.
-- **Spam trap.** Each form has a hidden field that people never see but bots fill in, and submissions made within 3 seconds of loading the page are ignored.
+- **Spam trap.** Each form has a hidden field that people never see but bots fill in, and submissions made within 3 seconds of loading the page are ignored. Both checks run in the browser, so a script posting straight to `mailer.php` skips them.
 - **Database validation.** The Firestore rules reject malformed or oversized bookings and testimonials.
 - **Admin-only endpoints.** `cal-push.php` and `ical-proxy.php` require the signed-in admin's Firebase token, which the server checks against the `admins` list. They only make HTTPS requests.
 - **Escaping.** Everything visitors submit is escaped before it is shown, on both the public site and the admin panel.
+- **The iCal address is private.** It is Google's secret address, which shows your whole calendar, so it lives in `private/calendar` and not in the public settings.
 
 If spam still gets through, the next step is **Firebase App Check** with reCAPTCHA (Firebase console → App Check), which blocks requests that don't come from the real site.
+
+The latest review, with the open findings, is [docs/security-review-2026-11-06.md](docs/security-review-2026-11-06.md).
+
+### Upgrading a live site to v1.1.0
+
+v1.1.0 moves the iCal address out of the public settings. Before it, anyone could read the address from `config/settings`, so it has to be reset. Do the steps in this order: if the new rules go live while the site still runs the old admin page, saving settings fails.
+
+1. In this repo, merge the fix and tag the release. Pushing `master` also deploys the demo.
+
+   ```powershell
+   git checkout master
+   ```
+
+   ```powershell
+   git merge security
+   ```
+
+   ```powershell
+   git tag v1.1.0
+   ```
+
+   ```powershell
+   git push origin master v1.1.0
+   ```
+
+2. In each theme repo (for example `F:\dev\holly-poppins`), pin the new tag and push to deploy:
+
+   ```powershell
+   $f = "$PWD\.github\workflows\deploy.yml"; [System.IO.File]::WriteAllText($f, ((Get-Content $f -Raw -Encoding UTF8) -replace 'ref: v1\.0\.0', 'ref: v1.1.0'))
+   ```
+
+   ```powershell
+   git commit -am "Use GroveMinder v1.1.0"; if ($?) { git push }
+   ```
+
+3. Once the deploy has finished, open the site's admin panel and click **Save** once in Settings. That moves the iCal address into `private/calendar` and removes it from the public settings.
+4. Publish the new [`firestore.rules`](firestore.rules): paste them into Firestore → Rules and click **Publish**, or run this from this repo (after `firebase login`), with the site's project id:
+
+   ```powershell
+   firebase deploy --only firestore:rules --project holly-poppins
+   ```
+
+5. Reset the secret address: in Google Calendar, open the calendar's **Settings and sharing → Integrate calendar → Secret address in iCal format** and click **Reset**. Paste the new address into the admin panel's iCal URL field and click **Save**. Anything else that used the old address (another calendar app, for example) needs the new one too.
+6. Recommended: in Google Cloud console → APIs and Services → Credentials, restrict the site's browser API key to HTTP referrers for the site's domain (for example `https://hollypoppins.com/*`). Check that sign-ups are still off (setup step 1.5).
+
+## Tests
+
+The tests run only on this machine. The rules tests use the Firestore emulator with a `demo-` project, and the PHP checks use `php -S`, with Firestore pointed at a closed local port and mail sent to a local SMTP sink. Nothing reaches a live project or site.
+
+Rules tests need Node, Java (Android Studio's bundled one works) and the Firebase CLI (`npm install -g firebase-tools`):
+
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+```
+
+```powershell
+Set-Location tests; npm install; if ($?) { npm run test:rules }; Set-Location ..
+```
+
+PHP checks need PHP, Python, curl and Git Bash. Run them from the repo root:
+
+```powershell
+bash tests/php/run.sh
+```
