@@ -336,6 +336,42 @@ v1.2.0 closes the mail findings of the review: visitor copies no longer repeat a
    - **Limits on visitor copies:** at most 2 a day to one address and 50 a day in all. Past that, the visitor sees the usual thank-you and only your notification is sent. Your notifications have their own quota of 100 a day, which visitor copies can't use up.
    - **A hard refresh** of the public site in any browser that had it open. A page loaded before the upgrade doesn't send the new bot-check fields, so the server answers "sent" and sends nothing.
 
+#### v1.2.0: keep calendar logins on the server (optional)
+
+Without this, the Google service-account key or the CalDAV password sits in Firestore (`private/calendar`) and the admin page sends it to `cal-push.php` on every booking. With it, they live in a PHP file outside the web folder, and the browser never holds them. If you only use the "email me an .ics" method, you have nothing to move.
+
+v1.2.0 also makes `ical-proxy.php` refuse private and internal addresses and feeds over 5 MB, and makes `cal-push.php` send the CalDAV password only to the CalDAV host you set (or a host under its domain, such as `p42-caldav.icloud.com`). These need no steps from you.
+
+1. Copy [`groveminder-secrets/calendar.php.example`](groveminder-secrets/calendar.php.example) to `calendar.php` and fill in what your method needs (`googleJson`, or `caldavUser` and `caldavPass`):
+
+   ```powershell
+   Copy-Item groveminder-secrets\calendar.php.example $HOME\calendar.php
+   ```
+
+   ```powershell
+   notepad $HOME\calendar.php
+   ```
+
+   Save it as UTF-8 without a BOM. For Google, paste the whole service-account JSON between the quotes of `googleJson`, writing any `'` as `\'`.
+
+2. Upload it by SFTP to a `groveminder-secrets` folder **next to** the site's web folder, not inside it. If the site is in `/home/you/public_html`, the file goes to `/home/you/groveminder-secrets/calendar.php`. Use your host's SFTP host name and login:
+
+   ```powershell
+   "mkdir groveminder-secrets`nput $HOME\calendar.php groveminder-secrets/calendar.php`nchmod 600 groveminder-secrets/calendar.php" | sftp you@sftp.example.com
+   ```
+
+3. Delete your local copy:
+
+   ```powershell
+   Remove-Item $HOME\calendar.php
+   ```
+
+4. Open the site's admin panel → Settings → Auto-add to Calendar. Press **Find my calendars** (CalDAV) or add a test booking to check that the push works. The file wins as soon as it exists: whatever is in the login fields is ignored.
+5. Clear the logins from Settings (the Google JSON box, or the CalDAV username and password), keep the method selected, and click **Save**. This removes them from Firestore.
+6. If the key or password has ever sat in Firestore, rotate it: create a new Google service-account key (and delete the old one in Google Cloud console → IAM → Service Accounts → Keys), or make a new app-specific password at appleid.apple.com, and put the new value in `calendar.php`.
+
+`tools/deploy.sh` never uploads this file, so deploys neither add nor overwrite it.
+
 ## Tests
 
 The tests run only on this machine. The rules tests use the Firestore emulator with a `demo-` project, and the PHP checks use `php -S`, with Firestore pointed at a closed local port and mail sent to a local SMTP sink. Nothing reaches a live project or site.

@@ -1,0 +1,22 @@
+<?php
+// GroveMinder calendar credentials, kept on the server so the browser never sees them.
+//
+// Put a copy named calendar.php in a folder called groveminder-secrets that sits NEXT TO
+// your site's web folder, not inside it. If the site is in /home/you/public_html, the
+// file is /home/you/groveminder-secrets/calendar.php. cal-push.php finds it by itself.
+// Create it by SFTP. tools/deploy.sh never uploads it.
+//
+// When this file exists, cal-push.php uses it and ignores any calendar credentials sent
+// from the admin page. Keep only what your calendar method needs.
+return [
+    // Auto-add to Google Calendar: the whole service-account JSON file, as one string.
+    'googleJson' => '',
+
+    // Auto-add through CalDAV (iCloud, Fastmail, Nextcloud, ...).
+    'caldavUser' => 'you@example.com',
+    'caldavPass' => 'app-specific-password',
+
+    // Optional. When set, the password is only ever sent to this host, or to a host under
+    // its domain (iCloud moves between caldav.icloud.com and pNN-caldav.icloud.com).
+    // 'caldavUrl' => 'https://caldav.icloud.com/',
+];

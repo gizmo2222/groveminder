@@ -31,6 +31,7 @@ SSHPASS="${SSHPASS:-}"
 # The product. Every site gets these exact files.
 PAGES=(site-core.js demo-firebase.js index.html admin.html email-templates.json)
 PHP=(hp-lib.php mailer.php cal-push.php ical-proxy.php)
+# groveminder-secrets/calendar.php (server-side calendar logins) is never uploaded: it is made by hand on the host.
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"; rm -f ~/.ssh/deploy_key' EXIT
@@ -74,6 +75,7 @@ for f in $HERO ${THEME_FILES:-}; do
   case "$SENT" in *" $f "*) continue ;; esac
   case "$f" in
     */*|.*) fail "Theme file '$f' must be a plain file name in the theme's root" ;;
+    calendar.php*) fail "Theme file '$f' looks like the server's calendar secrets; those are made by hand on the host" ;;
   esac
   for p in site-config.js "${PAGES[@]}" "${PHP[@]}"; do
     [ "$f" != "$p" ] || fail "Theme file '$f' would replace a product file"

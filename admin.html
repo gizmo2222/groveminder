@@ -1672,7 +1672,7 @@ document.getElementById('findCalendarsBtn').addEventListener('click', async () =
     const url  = document.getElementById('cal-caldav-url').value.trim()  || 'https://caldav.icloud.com/';
     const user = document.getElementById('cal-caldav-user').value.trim();
     const pass = document.getElementById('cal-caldav-pass').value.trim();
-    if (!user || !pass) { showToast('Enter a username and password first.', 'error'); return; }
+    // Empty is fine when the server has a calendar file (groveminder-secrets/calendar.php): it supplies the login.
 
     const btn    = document.getElementById('findCalendarsBtn');
     const result = document.getElementById('cal-discover-result');
@@ -1684,7 +1684,7 @@ document.getElementById('findCalendarsBtn').addEventListener('click', async () =
         const resp = await fetch('cal-push.php', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', ...(await authHeaders()) },
-            body:    JSON.stringify({ method: 'caldav_discover', booking: {}, cal: { caldavUrl: url, caldavUser: user, caldavPass: pass } }),
+            body:    JSON.stringify({ method: 'caldav_discover', booking: {}, cal: { caldavUrl: url, ...(user && { caldavUser: user }), ...(pass && { caldavPass: pass }) } }),
         });
         const data = await resp.json();
         if (!data.ok) throw new Error(data.error || 'Unknown error');
@@ -1838,12 +1838,13 @@ async function calPush(booking) {
     if (calConfig.method === 'email') {
         payload.cal.email = calConfig.email || config.email;
     } else if (calConfig.method === 'google') {
-        payload.cal.googleJson  = calConfig.googleJson;
+        // Credentials left empty in Settings are not sent; a server calendar file then supplies them.
+        if (calConfig.googleJson) payload.cal.googleJson = calConfig.googleJson;
         payload.cal.googleCalId = calConfig.googleCalId || 'primary';
     } else if (calConfig.method === 'caldav') {
         payload.cal.caldavUrl  = calConfig.caldavCal || calConfig.caldavUrl;
-        payload.cal.caldavUser = calConfig.caldavUser;
-        payload.cal.caldavPass = calConfig.caldavPass;
+        if (calConfig.caldavUser) payload.cal.caldavUser = calConfig.caldavUser;
+        if (calConfig.caldavPass) payload.cal.caldavPass = calConfig.caldavPass;
     }
 
     try {
