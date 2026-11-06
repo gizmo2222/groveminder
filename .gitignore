@@ -4,3 +4,6 @@ firebase-debug*.log
 # Dev-only test tools
 tests/node_modules/
 firestore-debug.log
+
+# Server-side calendar logins (only the .example is tracked)
+groveminder-secrets/calendar.php

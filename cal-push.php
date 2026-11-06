@@ -82,6 +82,8 @@ function pushEmail($to, $booking, $ical) {
 
 // ── CalDAV ─────────────────────────────────────────────────────────────────────
 
+$noCaldavLogin = 'No CalDAV username or password. Add them in Settings, or in the server calendar file.';
+
 function caldavRequest($method, $url, $user, $pass, $body = null, $extraHeaders = []) {
     if (!preg_match('#^https://#i', $url)) return ['body'=>'', 'code'=>0, 'error'=>'The calendar address must start with https://'];
     $hasType = (bool)preg_grep('/^Content-Type:/i', $extraHeaders);
@@ -117,13 +119,53 @@ function xpathQuery($xml, $ns, $query) {
     return $xpath->query($query);
 }
 
+// The last two labels of a host name (caldav.icloud.com → icloud.com).
+function caldavRegistrableDomain($host) {
+    $labels = explode('.', strtolower(rtrim((string)$host, '.')));
+    return implode('.', array_slice($labels, -2));
+}
+
+// Credentials may go to the configured CalDAV host, or to a host under its
+// registrable domain (iCloud moves from caldav.icloud.com to pNN-caldav.icloud.com).
+function caldavHostAllowed($host, $configuredHost) {
+    $host = strtolower(rtrim((string)$host, '.'));
+    $conf = strtolower(rtrim((string)$configuredHost, '.'));
+    if ($host === '' || $conf === '') return false;
+    if ($host === $conf) return true;
+    if (filter_var($conf, FILTER_VALIDATE_IP) || filter_var(trim($conf, '[]'), FILTER_VALIDATE_IP)) return false;
+    $suffix = '.' . caldavRegistrableDomain($conf);
+    return strlen($host) > strlen($suffix) && substr($host, -strlen($suffix)) === $suffix;
+}
+
+// Turns an href from a CalDAV response into an https URL on the configured host
+// (or its registrable domain). Anything else throws: the password is never sent there.
 function absoluteUrl($href, $baseUrl) {
-    if (strpos($href, 'http') === 0) return $href;
+    $href = trim($href);
     $p = parse_url($baseUrl);
-    return $p['scheme'] . '://' . $p['host'] . $href;
+    if (!$p || empty($p['host'])) throw new RuntimeException('The CalDAV address is not valid.');
+    $origin = 'https://' . $p['host'] . (isset($p['port']) ? ':' . $p['port'] : '');
+    if (preg_match('#^[a-z][a-z0-9+.-]*:#i', $href))  $abs = $href;
+    elseif (strpos($href, '//') === 0)                $abs = 'https:' . $href;
+    elseif ($href !== '' && $href[0] === '/')         $abs = $origin . $href;
+    else                                              $abs = $origin . '/' . $href;
+
+    $q = parse_url($abs);
+    $ok = !preg_match('/[\x00-\x20\x7f]/', $abs) && $q && strtolower($q['scheme'] ?? '') === 'https' && !empty($q['host'])
+        && !isset($q['user']) && !isset($q['pass']) && caldavHostAllowed($q['host'], $p['host']);
+    if (!$ok) throw new RuntimeException('The CalDAV server pointed to an address on a different host, so your password was not sent there.');
+    return $abs;
 }
 
 function discoverCaldav($url, $user, $pass) {
+    if ($user === '' || $pass === '') return ['ok'=>false,'error'=>$GLOBALS['noCaldavLogin']];
+    try {
+        return discoverCaldavSteps($url, $user, $pass);
+    } catch (RuntimeException $e) {
+        return ['ok'=>false,'error'=>$e->getMessage()];
+    }
+}
+
+function discoverCaldavSteps($url, $user, $pass) {
     $url = rtrim($url, '/') . '/';
     $ns  = ['D'=>'DAV:', 'C'=>'urn:ietf:params:xml:ns:caldav'];
 
@@ -168,6 +210,7 @@ function discoverCaldav($url, $user, $pass) {
 }
 
 function pushCaldav($url, $user, $pass, $ical) {
+    if ($user === '' || $pass === '') return ['ok'=>false,'error'=>$GLOBALS['noCaldavLogin']];
     $uid = 'hp-' . bin2hex(random_bytes(8));
     $url = rtrim($url, '/') . "/{$uid}.ics";
     $resp = caldavRequest('PUT', $url, $user, $pass, $ical, ['Content-Type: text/calendar; charset=utf-8']);
@@ -254,7 +297,54 @@ function pushGoogle($saJson, $calId, $booking) {
     return ['ok'=>true];
 }
 
+// ── Server-side credentials ────────────────────────────────────────────────────
+
+// Optional file outside the web root, so the browser never holds the calendar
+// credentials. It returns an array: googleJson, caldavUser, caldavPass and,
+// optionally, caldavUrl. See groveminder-secrets/calendar.php.example.
+function calendarSecretsFile() {
+    return dirname(__DIR__) . '/groveminder-secrets/calendar.php';
+}
+
+// null when there is no file. Otherwise the array it returns, or ['error' => ...].
+function loadCalendarSecrets($file) {
+    if (!is_file($file)) return null;
+    try {
+        $s = (static function ($f) { return include $f; })($file);
+    } catch (Throwable $e) {
+        return ['error' => 'The server calendar file could not be read.'];
+    }
+    return is_array($s) ? $s : ['error' => 'The server calendar file must return an array.'];
+}
+
+// When the file exists it wins: credentials sent in the request are dropped.
+function applyCalendarSecrets($cal, $secrets) {
+    foreach (['googleJson', 'caldavUser', 'caldavPass'] as $k) {
+        unset($cal[$k]);
+        if (isset($secrets[$k])) $cal[$k] = is_array($secrets[$k]) ? json_encode($secrets[$k]) : (string)$secrets[$k];
+    }
+    return $cal;
+}
+
 // ── Router ─────────────────────────────────────────────────────────────────────
+
+if (!is_array($cal)) $cal = [];
+$secrets = loadCalendarSecrets(calendarSecretsFile());
+if ($secrets !== null) {
+    if (isset($secrets['error'])) { echo json_encode(['ok'=>false,'error'=>$secrets['error']]); exit; }
+    $cal = applyCalendarSecrets($cal, $secrets);
+    // A CalDAV address set in the file pins where the password can go: the request
+    // may only name a host under the same domain (or leave the address out).
+    $fixed = (string)($secrets['caldavUrl'] ?? '');
+    if ($fixed !== '') {
+        $req = (string)($cal['caldavUrl'] ?? '');
+        if ($req === '') $cal['caldavUrl'] = $fixed;
+        elseif (!caldavHostAllowed(parse_url($req, PHP_URL_HOST), parse_url($fixed, PHP_URL_HOST))) {
+            echo json_encode(['ok'=>false,'error'=>'That CalDAV address is not on the host set in the server calendar file.']);
+            exit;
+        }
+    }
+}
 
 $ical = makeIcal($booking);
 
