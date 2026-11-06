@@ -3,3 +3,4 @@ firebase-debug*.log
 
 # Dev-only test tools
 tests/node_modules/
+firestore-debug.log
