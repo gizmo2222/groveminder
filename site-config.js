@@ -23,6 +23,12 @@ const SITE_CONFIG = {
     tagline:  "Your tagline here",
     heroDesc: "A short description of what you offer — the kind of work, who it's for, and why someone should reach out.",
 
+    // The domain the site's emails are sent from (noreply@ this domain). Use the
+    // domain the site is served from, so the mail passes SPF and DMARC. Every theme
+    // must set it. Left empty, the server's own name is used, which on some hosts
+    // comes from the visitor's request and can be forged.
+    mailDomain: "",
+
     // Optional image for the hero, shown instead of navEmoji. Put the file next
     // to this one and name it here (e.g. "logo.png"). Empty = use the emoji.
     heroImage: "",

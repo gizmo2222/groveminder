@@ -28,6 +28,12 @@ const SITE_CONFIG = {
     tagline:  "Gardens tended like they're my own",
     heroDesc: "Garden upkeep, seasonal planting and plant-sitting for busy households — one careful gardener, booked when it suits you.",
 
+    // The domain the site's emails are sent from (noreply@ this domain). Use the
+    // domain the site is served from, so the mail passes SPF and DMARC. Every theme
+    // must set it. Left empty, the server's own name is used, which on some hosts
+    // comes from the visitor's request and can be forged.
+    mailDomain: "",
+
     // ── Theme ─────────────────────────────────────────────────────────────────
     // Pick one of the named presets (THEMES in site-core.js), or override individual
     // colors with the `colors` block. The admin panel can switch themes at

@@ -7,7 +7,8 @@
 // so this can't be used to send arbitrary mail to arbitrary people:
 //   • "…_admin" messages go only to the contact email saved in Settings
 //   • "…_visitor" messages go only to the address the visitor typed, using a
-//     fixed template, and are rate limited
+//     template with none of the visitor's own words in it, and are rate limited
+//     (their own quotas, apart from the admin notifications')
 //   • confirm/decline messages require a signed-in admin
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -15,9 +16,6 @@ require __DIR__ . '/hp-lib.php';
 
 hp_require_post();
 $in = hp_input();
-
-// Honeypot: a hidden field real visitors never fill in. Pretend it worked.
-if (!empty($in['website'])) hp_json(['ok' => true]);
 
 const FORMS = [
     'booking'           => ['visitor' => 'booking_visitor',   'admin' => 'booking_admin'],
@@ -32,13 +30,23 @@ $form = $in['form'] ?? '';
 if (!isset(FORMS[$form])) hp_json(['ok' => false, 'error' => 'Unknown form'], 400);
 $spec = FORMS[$form];
 
-if (!empty($spec['adminOnly'])) {
+$public = empty($spec['adminOnly']);
+
+if (!$public) {
     hp_require_admin();
 } else {
-    // Generous for a real person, useless for a spammer
-    if (!hp_rate_limit('mail', 5, 3600) || !hp_rate_limit('mail-all', 100, 86400, false)) {
-        hp_json(['ok' => false, 'error' => 'Too many messages — please try again later.'], 429);
-    }
+    // Bot checks, repeated here because a script can skip the page: the hidden
+    // "website" field must be empty, and the page must have been open for 3 seconds
+    // (elapsed, in ms). Pretend it worked, so a bot learns nothing.
+    $elapsed = $in['elapsed'] ?? null;
+    if (!empty($in['website']) || !is_numeric($elapsed) || $elapsed < 3000) hp_json(['ok' => true]);
+
+    // Generous for a real person, useless for a spammer. The operator's own
+    // notifications have a daily quota of their own ('mail-all'); the visitor copies
+    // are limited separately below, so spending one can't block the other.
+    $busy = !hp_rate_limit('mail', 5, 3600)
+         || (!empty($spec['admin']) && !hp_rate_limit('mail-all', 100, 86400, false));
+    if ($busy) hp_json(['ok' => false, 'error' => 'Too many messages — please try again later.'], 429);
 }
 
 // ── Template variables ────────────────────────────────────────────────────────
@@ -57,6 +65,21 @@ $settings  = hp_public_settings();
 $saved     = is_array($settings['emailTemplates'] ?? null) ? $settings['emailTemplates'] : [];
 $defaults  = json_decode(@file_get_contents(__DIR__ . '/email-templates.json'), true) ?: [];
 $adminEmail = filter_var($settings['email'] ?? '', FILTER_VALIDATE_EMAIL) ?: '';
+
+// What a visitor copy may say. Anyone can enter any address as "their" email, so
+// nothing the visitor typed goes into the message, except a service name that is
+// one of the saved services and a date that is a real YYYY-MM-DD date.
+function visitor_copy_vars($vars, $settings) {
+    $out = array_fill_keys(['name', 'email', 'phone', 'notes', 'question', 'details', 'time', 'service', 'date'], '');
+    $out['siteName'] = $vars['siteName'];
+    $names = [];
+    foreach (is_array($settings['services'] ?? null) ? $settings['services'] : [] as $s) {
+        if (is_array($s) && is_string($s['name'] ?? null) && $s['name'] !== '') $names[] = $s['name'];
+    }
+    if ($vars['service'] !== '' && in_array($vars['service'], $names, true)) $out['service'] = $vars['service'];
+    if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $vars['date'], $m) && checkdate((int)$m[2], (int)$m[3], (int)$m[1])) $out['date'] = $vars['date'];
+    return $out;
+}
 
 function fill($str, $vars) {
     return preg_replace_callback('/\{(\w+)\}/', function ($m) use ($vars) { return $vars[$m[1]] ?? ''; }, (string)$str);
@@ -77,7 +100,14 @@ function send_template($type, $to, $vars, $replyTo, $saved, $defaults) {
 
 $ok = true;
 if (!empty($spec['visitor']) && $visitorEmail) {
-    $ok = send_template($spec['visitor'], $visitorEmail, $vars, $adminEmail, $saved, $defaults) && $ok;
+    if (!$public) {
+        $ok = send_template($spec['visitor'], $visitorEmail, $vars, $adminEmail, $saved, $defaults) && $ok;
+    } elseif (hp_rate_limit('mail-visitor-to', 2, 86400, false, hash('sha256', strtolower($visitorEmail)))
+           && hp_rate_limit('mail-visitor', 50, 86400, false)) {
+        // At most 2 copies a day to one address, 50 a day in all. Over the limit the
+        // copy is skipped without a word (the operator's notification still goes).
+        $ok = send_template($spec['visitor'], $visitorEmail, visitor_copy_vars($vars, $settings), $adminEmail, $saved, $defaults) && $ok;
+    }
 }
 if (!empty($spec['admin']) && $adminEmail) {
     $ok = send_template($spec['admin'], $adminEmail, $vars, $visitorEmail, $saved, $defaults) && $ok;

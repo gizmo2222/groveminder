@@ -908,7 +908,7 @@
                 <div class="booking-form">
                     <h3 class="form-title">Request a Booking</h3>
                     <form id="bookingForm" novalidate>
-                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" data-notify="booking" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="b-name">Your Name *</label>
@@ -971,7 +971,7 @@
         <div class="ref-form-wrap">
             <h3 class="form-title">Leave a Testimonial</h3>
             <form id="refForm" novalidate>
-                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" data-notify="reference" tabindex="-1" autocomplete="off"></label></div>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="r-name">Your Name *</label>
@@ -1021,7 +1021,7 @@
                 <div class="qa-form">
                     <h3 class="form-title">Ask a Question</h3>
                     <form id="qaForm" novalidate>
-                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" data-notify="question" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-group">
                             <label for="q-name">Your Name *</label>
                             <input type="text" id="q-name" maxlength="100" name="name" required placeholder="Your name">
@@ -1057,7 +1057,7 @@
                 <div class="rates-form">
                     <h3 class="form-title">Request Rate Info</h3>
                     <form id="ratesForm" novalidate>
-                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+                <div class="hp-field" aria-hidden="true"><label>Website <input type="text" name="website" data-notify="rates" tabindex="-1" autocomplete="off"></label></div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="ra-name">Your Name *</label>
@@ -1257,10 +1257,13 @@ function applyConfig(cfg) {
 // The server picks the recipients and builds the messages from the saved
 // templates; the page only says which form was sent and what was typed.
 function notify(form, vars) {
+    // The server repeats the spam checks: it ignores a request that fills the hidden
+    // "website" field or arrives within 3 seconds (elapsed, in ms since the page loaded).
+    const trap = document.querySelector('input[name="website"][data-notify="' + form + '"]');
     fetch('mailer.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ form, vars }),
+        body:    JSON.stringify({ form, vars, website: trap ? trap.value : '', elapsed: Math.round(performance.now()) }),
     }).catch(() => {});
 }
 
