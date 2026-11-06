@@ -41,7 +41,12 @@
             zelleHandle: 'hello@example.com',
             availableDates: available,
             theme: SITE_CONFIG.theme || 'grove',
-            services: SITE_CONFIG.defaultServices,
+            // Like a real save: rates that aren't public stay out of config
+            services: SITE_CONFIG.defaultServices.map(s => {
+                if (!s.rate || s.rate.public) return s;
+                const { rate, ...rest } = s;
+                return rest;
+            }),
             faq: SITE_CONFIG.defaultFaq,
             testimonials: SITE_CONFIG.demoTestimonials || [],
         }});
@@ -53,10 +58,19 @@
         save('testimonials', {
             t1: { name: 'Jo R.', role: 'Plant sitting · 2 trips', quote: 'Came home to happier plants than when I left. The photo updates were a lovely touch.', stars: 5, approved: false, createdAt: now - 5400e3 },
         });
-        save('private', {});
+        // Every rate, keyed by service id; only the admin can read this doc
+        const rates = {};
+        SITE_CONFIG.defaultServices.forEach(s => { if (s.rate) rates[s.id] = s.rate; });
+        rates.lawn = { base: '35', min: '1', notes: 'Quoted after a first visit.', public: false };
+        save('private', { rates: { services: rates } });
         localStorage.setItem(SEEDED, '1');
     }
-    try { if (!localStorage.getItem(SEEDED)) seed(); } catch { /* storage blocked: pages fall back to defaults */ }
+    try {
+        if (!localStorage.getItem(SEEDED)) seed();
+        // The admin page checks admins/{uid}; demos seeded before that check need the entry too
+        const admins = load('admins');
+        if (!admins.demo) save('admins', { ...admins, demo: {} });
+    } catch { /* storage blocked: pages fall back to defaults */ }
 
     function resetDemo() {
         try {

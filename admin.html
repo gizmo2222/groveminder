@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Content-Security-Policy. The sha256 values hash the page's inline script
+         blocks: after editing one, run tools/csp-hashes.mjs (README → Tests → CSP). -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-+OClRaujSY+P8g3kk2Q/CEmPQj8if8MsUX9YA7erFAA=' 'sha256-VXLyOHdwaC4DnGz/1ZNL9HEASSUJe9awieqw1CIcekQ=' https://www.gstatic.com https://www.google.com/recaptcha/ https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://www.google.com/recaptcha/; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/ https://*.firebaseapp.com https://*.web.app; object-src 'none'; base-uri 'self'; form-action 'self'">
     <title></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1035,16 +1038,21 @@
     if (SITE_CONFIG.themePicker === false) document.getElementById('appearance-section').hidden = true;
 })();
 </script>
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<!-- Firebase SDKs. A new version needs new integrity hashes (README → Tests → CSP),
+     and the same version in startAppCheck() in site-core.js. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"
+        integrity="sha384-sEVIly94UBRLKWdkYoPpSG7GD/e79YHMrxVyZaOk712Ga7+EAw6w1EFi+xBzBdd+" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"
+        integrity="sha384-EkqK+ezBWJuvO3hfrSx2iVqr3YQbhmnzn8kPhOpBZ+0GMVU5oGSgptwIu8D84HjE" crossorigin="anonymous"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"
+        integrity="sha384-M481iNZJtbpypKgvlvZ+78Giq0BsewFLk5r2k+MOcGXlwKCc27DQRZ+WCV/zpmpC" crossorigin="anonymous"></script>
 <!-- Only active when site-config.js sets demo: true (see README → Demo) -->
 <script src="demo-firebase.js"></script>
 
 <script>
 // ── Firebase ─────────────────────────────────────────────────────
 firebase.initializeApp(SITE_CONFIG.firebase);
+const appCheckReady = startAppCheck();   // optional, see site-config.js
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
@@ -1064,7 +1072,27 @@ const DEFAULTS = {
 let config = JSON.parse(JSON.stringify(DEFAULTS));
 
 // ── Auth ──────────────────────────────────────────────────────────
-auth.onAuthStateChanged(user => {
+// Being signed in isn't enough: only users listed in admins/{uid} get the panel.
+async function isAdminUser(user) {
+    try { return (await db.collection('admins').doc(user.uid).get()).exists; }
+    catch { return false; }
+}
+
+function showLoginError(text) {
+    const err = document.getElementById('loginError');
+    err.textContent = text;
+    err.style.display = 'block';
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+}
+
+appCheckReady.then(() => auth.onAuthStateChanged(async user => {
+    if (user && !(await isAdminUser(user))) {
+        try { await auth.signOut(); } catch { /* the login screen shows either way */ }
+        showLoginError("This account isn't an admin.");
+        user = null;
+    }
     if (user) {
         document.getElementById('screen-login').style.display = 'none';
         document.getElementById('screen-admin').classList.add('visible');
@@ -1075,7 +1103,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('screen-login').style.display = 'flex';
         document.getElementById('screen-admin').classList.remove('visible');
     }
-});
+}));
 
 document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
@@ -1090,10 +1118,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
             document.getElementById('login-password').value
         );
     } catch {
-        err.textContent = 'Incorrect email or password.';
-        err.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Sign In';
+        showLoginError('Incorrect email or password.');
     }
 });
 
@@ -1111,19 +1136,48 @@ async function loadConfig() {
     } catch {
         showToast("Couldn't load your settings — showing defaults.", 'error');
     }
+    // Every rate lives in private/rates, keyed by service id; the public settings
+    // hold only the rates marked public. Older versions kept hidden rates there
+    // too: those stay as loaded, and the next save moves them.
+    try {
+        const priv = await db.collection('private').doc('rates').get();
+        const saved = (priv.exists && priv.data().services) || {};
+        config.services = (config.services || []).map(s => saved[s.id] ? { ...s, rate: saved[s.id] } : s);
+        ratesLoaded = true;
+    } catch {
+        showToast("Couldn't load your private rates. Reload before saving.", 'error');
+    }
     populateUI();
 }
 
+let ratesLoaded = false;
+
+// The copy of a service that goes in the public settings
+function publicService(s) {
+    if (!s.rate || s.rate.public) return s;
+    const { rate, ...rest } = s;
+    return rest;
+}
+
 async function saveConfig() {
+    // Saving without the private rates would wipe them
+    if (!ratesLoaded) {
+        showToast("Your private rates didn't load. Reload the page, then save.", 'error');
+        return;
+    }
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;
     btn.textContent = 'Saving…';
     harvestUI();
+    config.services.forEach((s, i) => { if (!s.id) s.id = `svc_${Date.now()}_${i}`; });
+    const rates = {};
+    config.services.forEach(s => { if (s.rate) rates[s.id] = s.rate; });
     try {
         // Private first: if it fails, the public save that drops a legacy
-        // iCal address never runs, so the address is not lost.
+        // iCal address or hidden rate never runs, so nothing is lost.
         await saveCalConfig();
-        await db.collection('config').doc('settings').set(config);
+        await db.collection('private').doc('rates').set({ services: rates });
+        await db.collection('config').doc('settings').set({ ...config, services: config.services.map(publicService) });
         showToast('✓ Saved — changes are live immediately.', 'success');
     } catch {
         showToast('Save failed. Check your connection.', 'error');
@@ -1422,7 +1476,10 @@ async function syncCalendar() {
     btn.textContent = 'Sync from Calendar';
 }
 
+const MAX_EVENT_DAYS = 366;
+
 function parseIcal(text) {
+    const today = new Date().toISOString().slice(0, 10);
     text = text.replace(/\r\n[ \t]/g, '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const dates = new Set();
     text.split(/BEGIN:VEVENT/).slice(1).forEach(block => {
@@ -1434,8 +1491,13 @@ function parseIcal(text) {
         if (e) {
             const end = isoDate(e[1].trim());
             if (end && end > start) {
-                let cur = new Date(start + 'T12:00:00');
-                const fin = new Date(end   + 'T12:00:00');
+                // A bad feed can put DTEND centuries after DTSTART. Cap the span,
+                // and start at today: the sync shows only upcoming dates.
+                let cur = new Date((start < today ? today : start) + 'T12:00:00');
+                let fin = new Date(end + 'T12:00:00');
+                const cap = new Date(start + 'T12:00:00');
+                cap.setDate(cap.getDate() + MAX_EVENT_DAYS);
+                if (fin > cap) fin = cap;
                 while (cur < fin) { dates.add(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
                 return;
             }

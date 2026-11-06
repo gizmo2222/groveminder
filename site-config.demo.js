@@ -19,6 +19,11 @@ const SITE_CONFIG = {
         appId:             "1:000000000000:web:0000000000000000000000"
     },
 
+    // Optional Firebase App Check (README → "Upgrading a live site", v1.2.0).
+    // Paste a reCAPTCHA v3 site key to have every Firestore request prove it
+    // comes from this site. Empty = App Check off. Ignored in demo mode.
+    appCheckSiteKey: "",
+
     // ── Demo mode ─────────────────────────────────────────────────────────────
     demo: true,
 
@@ -52,7 +57,9 @@ const SITE_CONFIG = {
     },
 
     // ── Default content ───────────────────────────────────────────────────────
-    // Shown before the admin has saved anything to Firestore.
+    // Shown before the admin has saved anything to Firestore. This file is
+    // public, so leave rates you keep private empty here: enter them in the
+    // admin panel, which stores them where only you can read them.
 
     defaultServices: [
         { id: 'tidy',     icon: '🌿', name: 'Garden Tidy-Up',     desc: 'Weeding, edging, pruning and a proper clear-up, so the garden looks cared for again.', active: true, rate: { base: '45', min: '2', notes: 'Green waste taken away.', public: true } },

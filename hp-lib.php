@@ -109,6 +109,10 @@ function hp_fs_get($path, $idToken = null) {
     $pid = hp_site_config()['projectId'];
     $url = "https://firestore.googleapis.com/v1/projects/{$pid}/databases/(default)/documents/{$path}";
     $headers = $idToken ? ["Authorization: Bearer {$idToken}"] : [];
+    // Pass on the page's App Check token (site-core.js adds it to .php requests),
+    // so these reads still work once App Check is enforced for Firestore.
+    $appCheck = $_SERVER['HTTP_X_FIREBASE_APPCHECK'] ?? '';
+    if (preg_match('/^[A-Za-z0-9._-]{1,4096}$/', $appCheck)) $headers[] = "X-Firebase-AppCheck: {$appCheck}";
     [$code, $body] = hp_http('GET', $url, $headers);
     if ($code !== 200) return [$code, null];
     $doc = json_decode($body, true);

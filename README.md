@@ -223,12 +223,18 @@ GitHub Actions checks out the theme and GroveMinder at the pinned version, then 
 - **Admin-only endpoints.** `cal-push.php` and `ical-proxy.php` require the signed-in admin's Firebase token, which the server checks against the `admins` list. They only make HTTPS requests.
 - **Escaping.** Everything visitors submit is escaped before it is shown, on both the public site and the admin panel.
 - **The iCal address is private.** It is Google's secret address, which shows your whole calendar, so it lives in `private/calendar` and not in the public settings.
-
-If spam still gets through, the next step is **Firebase App Check** with reCAPTCHA (Firebase console → App Check), which blocks requests that don't come from the real site.
+- **Hidden rates are private.** A rate with **Show rate publicly** unticked is saved to `private/rates`, so only the admin can read it.
+- **Admins only.** The admin panel signs out any account that has no entry in `admins`.
+- **Locked-down scripts.** The Firebase scripts carry Subresource Integrity hashes, and both pages set a Content-Security-Policy that allows only this site, Firebase, Google sign-in and reCAPTCHA, and Google Fonts. Inline scripts are allowed by hash (see Tests).
+- **App Check (optional).** With `appCheckSiteKey` set in `site-config.js`, the pages run Firebase App Check with reCAPTCHA v3. Once it is enforced for Firestore, scripts that use the public API key directly are refused. The steps are in v1.2.0 below.
 
 The latest review, with the open findings, is [docs/security-review-2026-11-06.md](docs/security-review-2026-11-06.md).
 
-### Upgrading a live site to v1.1.0
+### Upgrading a live site
+
+Do each release's steps in order, oldest first: a site on v1.0.0 does v1.1.0 and then v1.2.0.
+
+#### v1.1.0
 
 v1.1.0 moves the iCal address out of the public settings. Before it, anyone could read the address from `config/settings`, so it has to be reset. Do the steps in this order: if the new rules go live while the site still runs the old admin page, saving settings fails.
 
@@ -278,9 +284,19 @@ v1.1.0 moves the iCal address out of the public settings. Before it, anyone coul
 5. Reset the secret address: in Google Calendar, open the calendar's **Settings and sharing → Integrate calendar → Secret address in iCal format** and click **Reset**. Paste the new address into the admin panel's iCal URL field and click **Save**. Anything else that used the old address (another calendar app, for example) needs the new one too.
 6. Recommended: in Google Cloud console → APIs and Services → Credentials, restrict the site's browser API key to HTTP referrers for the site's domain (for example `https://hollypoppins.com/*`). Check that sign-ups are still off (setup step 1.5).
 
-#### Upgrading a live site to v1.2.0
+#### v1.2.0
 
-v1.2.0 closes the mail findings of the review: visitor copies no longer repeat anything a visitor typed, the sender domain comes from your config instead of the request, and the rate-limit counters move to a private folder. Each theme has to set `mailDomain`, or its mail falls back to the server's own name.
+v1.2.0 fixes the medium and low findings of the review:
+- Visitor copies of emails no longer repeat anything a visitor typed.
+- The mail sender's domain comes from your config, not from the request.
+- The rate-limit counters move to a private folder.
+- Rates marked not public are moved out of the public settings.
+- Only admins can open the admin panel.
+- Both pages get Subresource Integrity and a Content-Security-Policy.
+- Firebase App Check is available as an option.
+- The calendar endpoints refuse internal addresses and keep logins on their own host.
+
+The Firestore rules don't change. Each theme has to set `mailDomain`, or its mail falls back to the server's own name.
 
 1. In this repo, merge the fix and tag the release. Pushing `master` also deploys the demo.
 
@@ -300,41 +316,70 @@ v1.2.0 closes the mail findings of the review: visitor copies no longer repeat a
    git push origin master v1.2.0
    ```
 
-2. In each theme repo (for example `F:\dev\holly-poppins`), set `mailDomain` to the domain the site's mail should come from, without `www.` (for example `hollypoppins.com`). This adds the line above `heroDesc` in `site-config.js`, and the line has to be in every theme:
-
-   ```powershell
-   Set-Location F:\dev\holly-poppins
-   ```
-
-   ```powershell
-   $f = "$PWD\site-config.js"; $t = Get-Content $f -Raw -Encoding UTF8; $t = $t -replace '(?m)^([ \t]*)heroDesc:', ('$1mailDomain: "hollypoppins.com",' + "`r`n" + '$1heroDesc:'); [System.IO.File]::WriteAllText($f, $t, (New-Object System.Text.UTF8Encoding($false)))
-   ```
-
-   ```powershell
-   Select-String -Path site-config.js -Pattern 'mailDomain'
-   ```
-
-   If the file has no `heroDesc:` line, add `mailDomain: "hollypoppins.com",` by hand. A theme that leaves it empty sends its mail from the server's name (`SERVER_NAME`), which can be a hostname the host chose or, on a default virtual host, the one the visitor asked for.
-
-3. Pin the new release by its commit SHA, as for v1.1.0, and push to deploy:
+2. Still in this repo, note the release's commit SHA, then go to the theme repo (for example `F:\dev\holly-poppins`):
 
    ```powershell
    $sha = git rev-parse "v1.2.0^{commit}"
    ```
 
    ```powershell
-   $f = "$PWD\.github\workflows\deploy.yml"; $t = Get-Content $f -Raw -Encoding UTF8; $t = $t -replace 'ref: [0-9a-f]{40}', "ref: $sha"; [System.IO.File]::WriteAllText($f, $t, (New-Object System.Text.UTF8Encoding($false)))
+   Set-Location F:\dev\holly-poppins
+   ```
+
+3. Set `mailDomain` to the domain the site's mail should come from, without `www.` (for example `hollypoppins.com`). This adds the line above `heroDesc` in `site-config.js`:
+
+   ```powershell
+   $f = "$PWD\site-config.js"; $t = [System.IO.File]::ReadAllText($f); $t = $t -replace '(?m)^([ \t]*)heroDesc:', ('$1mailDomain: "hollypoppins.com",' + "`r`n" + '$1heroDesc:'); [System.IO.File]::WriteAllText($f, $t)
+   ```
+
+   ```powershell
+   Select-String -Path site-config.js -Pattern 'mailDomain'
+   ```
+
+   If the file has no `heroDesc:` line, add `mailDomain: "hollypoppins.com",` by hand. A theme that leaves it empty sends its mail from the server's name (`SERVER_NAME`). That can be a hostname the host chose or, on a default virtual host, the one the visitor asked for.
+
+   If `site-config.js` gives a service a rate with `public: false`, delete that rate from the file, because the file is public. Enter the rate in the admin panel instead.
+
+4. Pin the new release by its commit SHA and push to deploy:
+
+   ```powershell
+   $f = "$PWD\.github\workflows\deploy.yml"; $t = [System.IO.File]::ReadAllText($f); $t = $t -replace 'ref: [0-9a-f]{40}', "ref: $sha"; [System.IO.File]::WriteAllText($f, $t)
    ```
 
    ```powershell
    git commit -am "Use GroveMinder v1.2.0 and set mailDomain"; if ($?) { git push }
    ```
 
-4. After the deploy, check these:
-   - **A `groveminder-data` folder** appears next to the site's folder on the host (outside the web root) the first time someone submits a form. It holds the rate-limit counters. Deploys neither upload nor delete it. If the host won't let PHP create it, the counters go in a `data` folder inside the site instead, with an `.htaccess` that denies downloads. Counters start from zero, so nothing carries over.
-   - **Saved email templates** in the admin panel (the **Email Templates** section). In the copy sent to a visitor, `{name}`, `{email}`, `{phone}`, `{time}`, `{notes}`, `{question}` and `{details}` are now empty. `{service}` and `{date}` are filled only when the service is one of your saved services and the date is a real date. Reword any saved visitor template that says "Hi {name},", so it reads "Hello,". Your own notification emails and the confirm/decline emails are unchanged.
-   - **Limits on visitor copies:** at most 2 a day to one address and 50 a day in all. Past that, the visitor sees the usual thank-you and only your notification is sent. Your notifications have their own quota of 100 a day, which visitor copies can't use up.
+5. Once the deploy has finished, open the site's admin panel and click **Save** once. That copies every rate into `private/rates` and removes the hidden ones from the public settings. To check, open Firestore → Data in the Firebase console: in `config/settings`, the hidden services have no `rate`.
+6. Then check these:
+   - **A `groveminder-data` folder** appears next to the site's folder on the host (outside the web root) the first time someone submits a form.
+     - It holds the rate-limit counters. Deploys neither upload nor delete it.
+     - If the host won't let PHP create it, the counters go in a `data` folder inside the site instead, with an `.htaccess` that denies downloads.
+     - Counters start from zero, so nothing carries over.
+   - **Saved email templates** in the admin panel (the **Email Templates** section).
+     - In the copy sent to a visitor, `{name}`, `{email}`, `{phone}`, `{time}`, `{notes}`, `{question}` and `{details}` are now empty.
+     - `{service}` and `{date}` are filled only when the service is one of your saved services and the date is a real date.
+     - Reword any saved visitor template that says "Hi {name},", so it reads "Hello,".
+     - Your own notification emails and the confirm/decline emails are unchanged.
+   - **Limits on visitor copies:** at most 2 a day to one address and 50 a day in all.
+     - Past that, the visitor sees the usual thank-you and only your notification is sent.
+     - Your notifications have their own quota of 100 a day, which visitor copies can't use up.
    - **A hard refresh** of the public site in any browser that had it open. A page loaded before the upgrade doesn't send the new bot-check fields, so the server answers "sent" and sends nothing.
+7. Recommended, against booking and testimonial spam: turn on App Check.
+   1. Create a reCAPTCHA v3 key at [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin/create) for the site's domain (for example `hollypoppins.com`). It gives a site key and a secret key.
+   2. In the Firebase console → App Check → Apps, register the web app with reCAPTCHA and paste the **secret** key.
+   3. In the theme repo's `site-config.js`, set `appCheckSiteKey` to the **site** key, then commit and push to deploy:
+
+      ```powershell
+      git commit -am "Turn on App Check"; if ($?) { git push }
+      ```
+
+   4. Wait a few days, then check App Check → APIs → Cloud Firestore. Nearly all requests should be verified.
+      - Also check that a booking from the site still emails you.
+      - Check that the admin's calendar sync and push still work. The PHP endpoints pass the page's App Check token on to Firestore.
+   5. Click **Enforce** for Cloud Firestore. A visitor whose browser still has a page from before App Check was turned on gets errors until they reload it.
+
+   The admin page's CSP allows the Firebase sign-in frame only from `*.firebaseapp.com` and `*.web.app`. A site whose `authDomain` is its own domain must add that domain to `frame-src` in `admin.html`.
 
 #### v1.2.0: keep calendar logins on the server (optional)
 
@@ -390,4 +435,14 @@ PHP checks need PHP, Python, curl and Git Bash. Run them from the repo root:
 
 ```powershell
 bash tests/php/run.sh
+```
+
+The Content-Security-Policy on both pages lists a sha256 hash for each inline script block, so editing one breaks the page until the hashes are updated. After changing an inline script, update them, then check:
+
+```powershell
+node tools/csp-hashes.mjs
+```
+
+```powershell
+Set-Location tests; npm run test:csp; Set-Location ..
 ```
